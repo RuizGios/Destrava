@@ -4,189 +4,421 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Destrava</title>
-<meta name="description" content="Aulas de direcao avulsas e seguras para quem ja tem CNH.">
-<meta name="theme-color" content="#0E6B5C">
+<meta name="description" content="Aulas de direcao avulsas e monitoradas para quem ja tem CNH.">
+<meta name="theme-color" content="#0E1A17">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-<div class="app" id="app">
+<!-- ============ CABECALHO (desktop) ============ -->
+<header class="nav">
+  <div class="nav-in">
+    <button class="logo" data-go="home" type="button">
+      <span class="logo-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="logo-word">destrava</span>
+    </button>
+    <nav class="nav-links">
+      <button data-go="home" type="button">Buscar aula</button>
+      <button data-go="lessons" type="button">Minhas aulas</button>
+      <button data-go="signup" type="button">Seja instrutor</button>
+      <button class="nav-cta" data-go="staff" type="button">Área do especialista</button>
+    </nav>
+  </div>
+</header>
 
-  <!-- ====================== 1. INICIO / BUSCA ====================== -->
+<main id="main">
+
+  <!-- ====================== 1. INICIO ====================== -->
   <section class="screen is-active" id="screen-home">
-    <header class="topbar topbar--plain">
-      <div>
-        <div class="brand">Destrava</div>
-        <div class="brand-sub" id="home-greeting">Oi, visitante</div>
+    <div class="hero">
+      <div class="wrap hero-grid">
+        <div class="hero-text">
+          <span class="eyebrow">Para quem já tem CNH</span>
+          <h1 class="display">Destrave<br>o volante.</h1>
+          <p class="lede">Aulas avulsas com instrutor que você escolhe, aula acompanhada por GPS e nenhum pacote de autoescola.</p>
+          <ul class="hero-points">
+            <li><span class="tick">&#10003;</span> Credencial do Detran e antecedentes conferidos</li>
+            <li><span class="tick">&#10003;</span> Localização ao vivo e botão de emergência</li>
+            <li><span class="tick">&#10003;</span> Você paga só as aulas que precisa</li>
+          </ul>
+        </div>
+
+        <div class="searchcard">
+          <h2 class="card-title">Com o que você tem dificuldade?</h2>
+          <div class="chips" id="home-difficulties"></div>
+
+          <div class="field-label">Onde</div>
+          <div class="field">
+            <select id="home-city" class="field-select"></select>
+          </div>
+
+          <div class="field-label">Carro da aula</div>
+          <div class="option-group" id="home-car">
+            <button class="option is-on" data-car="aluno" type="button">
+              <span class="radio"></span>
+              <span class="option-text"><b>Tenho carro próprio ou emprestado</b><small>A aula fica mais barata</small></span>
+            </button>
+            <button class="option" data-car="instrutor" type="button">
+              <span class="radio"></span>
+              <span class="option-text"><b>Preciso do carro do instrutor</b><small>Com duplo pedal</small></span>
+            </button>
+          </div>
+
+          <button class="btn btn--volt btn--block" id="home-search" type="button">Ver instrutores</button>
+        </div>
       </div>
-    </header>
+      <div class="lane" aria-hidden="true"></div>
+    </div>
 
-    <div class="content">
-      <h1 class="headline">Com o que você<br>tem dificuldade?</h1>
-
-      <div class="chips" id="home-difficulties"></div>
-
-      <div class="field-label">Onde</div>
-      <div class="field">
-        <select id="home-city" class="field-select">
-          <option value="Limeira, SP">Limeira, SP</option>
-          <option value="Campinas, SP">Campinas, SP</option>
-          <option value="Americana, SP">Americana, SP</option>
-          <option value="Piracicaba, SP">Piracicaba, SP</option>
-        </select>
+    <div class="wrap">
+      <div class="how">
+        <div class="how-item">
+          <span class="how-num">01</span>
+          <h3 class="h3">Diga o que te trava</h3>
+          <p>Estrada, baliza, ladeira, trânsito, dirigir à noite ou só o medo de voltar ao volante. A busca começa pela sua dificuldade, não por uma lista de nomes.</p>
+        </div>
+        <div class="how-item">
+          <span class="how-num">02</span>
+          <h3 class="h3">Escolha quem vai te ensinar</h3>
+          <p>Você vê perfil, nota, carro e preço antes de contratar. Dá para filtrar por instrutora mulher, e elas podem optar por atender somente mulheres.</p>
+        </div>
+        <div class="how-item">
+          <span class="how-num">03</span>
+          <h3 class="h3">Faça a aula acompanhada</h3>
+          <p>O trajeto vai por GPS para um contato seu, a gravação é opcional e o botão de emergência fica na tela durante a aula inteira.</p>
+        </div>
       </div>
 
-      <div class="field-label">Carro da aula</div>
-      <div class="option-group" id="home-car">
-        <button class="option is-on" data-car="aluno" type="button">
-          <span class="radio"></span>
-          <span class="option-text">
-            <b>Tenho carro próprio ou emprestado</b>
-            <small>A aula fica mais barata</small>
-          </span>
-        </button>
-        <button class="option" data-car="instrutor" type="button">
-          <span class="radio"></span>
-          <span class="option-text">
-            <b>Preciso do carro do instrutor</b>
-            <small>Com duplo pedal</small>
-          </span>
-        </button>
+      <div class="trust">
+        <div>
+          <span class="eyebrow">Nosso diferencial</span>
+          <h2 class="trust-title">Ninguém entra no carro com um desconhecido sem checagem.</h2>
+        </div>
+        <ul class="trust-list">
+          <li><span class="tick">&#10003;</span> Credencial de instrutor conferida no Detran</li>
+          <li><span class="tick">&#10003;</span> Certidão de antecedentes criminais negativa</li>
+          <li><span class="tick">&#10003;</span> Análise feita por uma pessoa da nossa equipe</li>
+          <li><span class="tick">&#10003;</span> Avaliação e denúncia a cada aula</li>
+        </ul>
       </div>
-
-      <button class="btn btn--block" id="home-search" type="button">Ver instrutores</button>
-      <p class="note">Todos os instrutores têm credencial do Detran e antecedentes verificados.</p>
     </div>
   </section>
 
   <!-- ====================== 2. LISTA ====================== -->
   <section class="screen" id="screen-list">
-    <header class="topbar">
-      <button class="icon-btn" data-back="home" type="button" aria-label="Voltar">&#8592;</button>
-      <h2 id="list-title">Instrutores</h2>
-    </header>
-
-    <div class="content">
-      <div class="filterbar" id="list-filters">
-        <button class="fchip" data-filter="mulher" type="button">Instrutora mulher</button>
-        <button class="fchip" data-filter="automatico" type="button">Câmbio automático</button>
-        <button class="fchip" data-filter="nota" type="button">Nota 4,5+</button>
-        <button class="fchip" data-filter="preco" type="button">Até R$ 80</button>
+    <div class="wrap">
+      <button class="back" data-back type="button"><span>&#8592;</span> Voltar</button>
+      <h1 class="page-title" id="list-title">Instrutores</h1>
+      <div class="list-grid">
+        <aside class="sidebar">
+          <div class="sidebar-box">
+            <div class="sidebar-head">Filtros</div>
+            <div class="filterbar" id="list-filters">
+              <button class="fchip" data-filter="mulher" type="button">Instrutora mulher</button>
+              <button class="fchip" data-filter="homem" type="button">Instrutor homem</button>
+              <button class="fchip" data-filter="automatico" type="button">Câmbio automático</button>
+              <button class="fchip" data-filter="manual" type="button">Câmbio manual</button>
+              <button class="fchip" data-filter="nota" type="button">Nota 4,5 ou mais</button>
+              <button class="fchip" data-filter="preco" type="button">Até R$ 80</button>
+            </div>
+            <button class="btn btn--line btn--sm btn--block" id="list-clear" type="button">Limpar filtros</button>
+          </div>
+        </aside>
+        <div>
+          <div id="list-count" class="list-count"></div>
+          <div id="list-results" class="cards"></div>
+        </div>
       </div>
-      <div id="list-count" class="list-count"></div>
-      <div id="list-results"></div>
     </div>
   </section>
 
   <!-- ====================== 3. PERFIL ====================== -->
   <section class="screen" id="screen-profile">
-    <header class="topbar">
-      <button class="icon-btn" data-back="list" type="button" aria-label="Voltar">&#8592;</button>
-      <h2>Perfil do instrutor</h2>
-    </header>
-    <div class="content" id="profile-content"></div>
+    <div class="wrap">
+      <button class="back" data-back type="button"><span>&#8592;</span> Voltar</button>
+      <div id="profile-content"></div>
+    </div>
   </section>
 
   <!-- ====================== 4. AGENDAMENTO ====================== -->
   <section class="screen" id="screen-booking">
-    <header class="topbar">
-      <button class="icon-btn" data-back="profile" type="button" aria-label="Voltar">&#8592;</button>
-      <h2 id="booking-title">Agendar aula</h2>
-    </header>
-    <div class="content">
-      <div class="field-label">Data</div>
-      <div class="slots" id="booking-dates"></div>
+    <div class="wrap">
+      <button class="back" data-back type="button"><span>&#8592;</span> Voltar</button>
+      <h1 class="page-title" id="booking-title">Agendar aula</h1>
 
-      <div class="field-label">Horário</div>
-      <div class="slots" id="booking-times"></div>
+      <div class="booking-grid">
+        <div class="panel">
+          <div class="field-label">Data</div>
+          <div class="slots" id="booking-dates"></div>
 
-      <div class="field-label">Carro da aula</div>
-      <div class="option-group" id="booking-car"></div>
+          <div class="field-label">Horário</div>
+          <div class="slots" id="booking-times"></div>
 
-      <div class="field-label">Ponto de encontro</div>
-      <div class="field">
-        <input class="field-input" id="booking-place" type="text" placeholder="Rua, número e bairro">
+          <div class="field-label">Carro da aula</div>
+          <div class="option-group" id="booking-car"></div>
+
+          <div class="field-label">Onde a aula começa</div>
+          <div class="row-2">
+            <div>
+              <div class="field">
+                <input class="field-input" id="booking-cep" type="text" inputmode="numeric" placeholder="CEP, só números" maxlength="9">
+              </div>
+              <div class="hint" id="cep-status">Digite o CEP e o endereço aparece sozinho.</div>
+            </div>
+            <div class="field">
+              <input class="field-input" id="booking-numero" type="text" inputmode="numeric" placeholder="Número">
+            </div>
+          </div>
+          <div class="field is-locked">
+            <input class="field-input" id="booking-rua" type="text" placeholder="Rua" readonly>
+          </div>
+          <div class="row-2">
+            <div class="field is-locked">
+              <input class="field-input" id="booking-bairro" type="text" placeholder="Bairro" readonly>
+            </div>
+            <div class="field is-locked">
+              <input class="field-input" id="booking-cidade" type="text" placeholder="Cidade" readonly>
+            </div>
+          </div>
+          <div class="field">
+            <input class="field-input" id="booking-complemento" type="text" placeholder="Complemento ou ponto de referência (opcional)">
+          </div>
+          <button class="linkish" id="cep-manual" type="button">Não sei o CEP, quero digitar o endereço</button>
+
+          <div class="field-label">Contato de confiança</div>
+          <div class="row-2">
+            <div class="field">
+              <input class="field-input" id="booking-contato-nome" type="text" placeholder="Nome">
+            </div>
+            <div class="field">
+              <input class="field-input" id="booking-contato-tel" type="text" inputmode="numeric" placeholder="Telefone com DDD" maxlength="16">
+            </div>
+          </div>
+          <div class="hint">Essa pessoa recebe sua localização quando a aula começar e se você apertar o botão de emergência.</div>
+
+          <label class="switch">
+            <input type="checkbox" id="booking-record">
+            <span class="switch-box"></span>
+            <span class="switch-text">
+              <b>Gravar o áudio da aula</b>
+              <small>Opcional. O instrutor também precisa aceitar. Fica criptografado e é apagado em 30 dias.</small>
+            </span>
+          </label>
+        </div>
+
+        <aside class="panel panel--sticky">
+          <div class="sidebar-head">Resumo</div>
+          <div id="booking-resume-who"></div>
+          <div class="summary" id="booking-summary"></div>
+          <button class="btn btn--block" id="booking-confirm" type="button">Confirmar agendamento</button>
+          <div class="errors" id="booking-errors"></div>
+          <p class="note">Nesta versão de teste o pagamento é combinado direto com o instrutor.</p>
+        </aside>
       </div>
-
-      <div class="field-label">Contato de confiança</div>
-      <div class="field">
-        <input class="field-input" id="booking-contact" type="text" placeholder="Nome e telefone de quem acompanha a aula">
-      </div>
-
-      <label class="switch">
-        <input type="checkbox" id="booking-record">
-        <span class="switch-box"></span>
-        <span class="switch-text">
-          <b>Gravar o áudio da aula</b>
-          <small>Opcional. A instrutora também precisa aceitar. Apagado em 30 dias.</small>
-        </span>
-      </label>
-
-      <div class="summary" id="booking-summary"></div>
-      <button class="btn btn--block" id="booking-confirm" type="button">Confirmar agendamento</button>
-      <p class="note">Nesta versão de teste o pagamento é combinado direto com o instrutor.</p>
     </div>
   </section>
 
   <!-- ====================== 5. CONFIRMACAO ====================== -->
   <section class="screen" id="screen-done">
-    <div class="content content--center" id="done-content"></div>
+    <div class="wrap wrap--narrow center-screen" id="done-content"></div>
   </section>
 
   <!-- ====================== 6. MINHAS AULAS ====================== -->
   <section class="screen" id="screen-lessons">
-    <header class="topbar topbar--plain">
-      <h2>Minhas aulas</h2>
-    </header>
-    <div class="content" id="lessons-content"></div>
+    <div class="wrap">
+      <h1 class="page-title">Minhas aulas</h1>
+      <div id="lessons-content" class="cards"></div>
+    </div>
   </section>
 
   <!-- ====================== 7. AULA EM ANDAMENTO ====================== -->
   <section class="screen" id="screen-live">
-    <header class="topbar">
-      <h2>Aula em andamento</h2>
-    </header>
-    <div class="live">
-      <div class="map-wrap">
-        <div id="map"></div>
-        <div class="live-tag"><span class="live-dot"></span><span id="live-gps-label">Localização ao vivo</span></div>
-      </div>
-      <div class="live-body">
-        <h3 id="live-title">Aula</h3>
-        <p class="live-meta" id="live-meta"></p>
-        <div class="live-actions">
-          <button class="btn btn--ghost" id="live-share" type="button">Compartilhar<br>com contato</button>
-          <button class="btn btn--danger" id="live-sos" type="button">Botão de<br>emergência</button>
+    <div class="wrap">
+      <h1 class="page-title">Aula em andamento</h1>
+      <div class="live-grid">
+        <div class="map-wrap">
+          <div id="map"></div>
+          <div class="live-tag"><span class="live-dot"></span><span id="live-gps-label">Localização ao vivo</span></div>
         </div>
-        <p class="note" id="live-note">O trajeto fica registrado. Se a aula sair muito da região combinada, o app avisa você e seu contato de confiança.</p>
-        <button class="btn btn--block" id="live-finish" type="button">Encerrar aula</button>
+        <div class="panel">
+          <h3 class="h3" id="live-title">Aula</h3>
+          <p class="live-meta" id="live-meta"></p>
+          <div class="live-actions">
+            <button class="btn btn--line" id="live-share" type="button">Compartilhar com contato</button>
+            <button class="btn btn--danger" id="live-sos" type="button">Botão de emergência</button>
+          </div>
+          <p class="note" id="live-note">O trajeto fica registrado. Se a aula sair muito da região combinada, o app avisa você e seu contato de confiança.</p>
+          <button class="btn btn--block" id="live-finish" type="button">Encerrar aula</button>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- ====================== 8. AVALIACAO ====================== -->
   <section class="screen" id="screen-rate">
-    <header class="topbar">
-      <h2>Como foi a aula?</h2>
-    </header>
-    <div class="content" id="rate-content"></div>
+    <div class="wrap wrap--narrow" id="rate-content"></div>
   </section>
 
-  <!-- ====================== NAV ====================== -->
-  <nav class="tabbar" id="tabbar">
-    <button class="tab is-on" data-tab="home" type="button">
-      <span class="tab-ico">&#9679;</span><span>Buscar</span>
-    </button>
-    <button class="tab" data-tab="lessons" type="button">
-      <span class="tab-ico">&#9632;</span><span>Minhas aulas</span>
-    </button>
-  </nav>
+  <!-- ====================== 9. CADASTRO DE INSTRUTOR ====================== -->
+  <section class="screen" id="screen-signup">
+    <div class="wrap">
+      <button class="back" data-back type="button"><span>&#8592;</span> Voltar</button>
+      <span class="eyebrow">Seja instrutor</span>
+      <h1 class="page-title">Cadastre-se para dar aulas</h1>
+      <p class="lede lede--sm">Seu cadastro passa pela análise de um especialista. Só entra no aplicativo quem tem credencial do Detran válida e antecedentes criminais negativos.</p>
 
-</div>
+      <div class="steps" id="signup-steps">
+        <div class="step is-on"><b>1</b> Seus dados</div>
+        <div class="step"><b>2</b> Documentos</div>
+        <div class="step"><b>3</b> Envio</div>
+      </div>
+
+      <div class="booking-grid">
+        <div class="panel">
+          <!-- etapa 1 -->
+          <div class="signup-step is-on" data-step="1">
+            <div class="row-2">
+              <div><div class="field-label">Nome completo</div><div class="field"><input class="field-input" id="sg-nome" type="text" placeholder="Como aparece na CNH"></div></div>
+              <div><div class="field-label">Número da credencial</div><div class="field"><input class="field-input" id="sg-credencial" type="text" placeholder="Ex.: SP-048221"></div></div>
+            </div>
+            <div class="row-2">
+              <div><div class="field-label">E-mail</div><div class="field"><input class="field-input" id="sg-email" type="email" placeholder="seu@email.com"></div></div>
+              <div><div class="field-label">Telefone</div><div class="field"><input class="field-input" id="sg-tel" type="text" inputmode="numeric" placeholder="(00) 00000-0000" maxlength="16"></div></div>
+            </div>
+            <div class="row-2">
+              <div><div class="field-label">Cidade onde atende</div><div class="field"><select class="field-select" id="sg-cidade"></select></div></div>
+              <div><div class="field-label">Bairro de referência</div><div class="field"><input class="field-input" id="sg-bairro" type="text" placeholder="Onde você começa as aulas"></div></div>
+            </div>
+            <div class="row-2">
+              <div><div class="field-label">Anos de experiência</div><div class="field"><input class="field-input" id="sg-anos" type="number" min="0" max="50" placeholder="0"></div></div>
+              <div><div class="field-label">Preço da aula com seu carro</div><div class="field"><input class="field-input" id="sg-preco" type="number" min="30" max="300" placeholder="Ex.: 85"></div></div>
+            </div>
+            <div class="field-label">Seu carro</div>
+            <div class="row-2">
+              <div class="field"><input class="field-input" id="sg-carro" type="text" placeholder="Modelo e ano, com duplo pedal"></div>
+              <div class="field"><select class="field-select" id="sg-cambio">
+                <option>Manual</option><option>Automático</option><option>Manual e automático</option>
+              </select></div>
+            </div>
+            <div class="field-label">Em que você é especialista</div>
+            <div class="chips" id="sg-especialidades"></div>
+            <div class="field-label">Sobre você</div>
+            <textarea class="textarea" id="sg-bio" placeholder="Conte em duas linhas como é a sua aula. O aluno lê isso antes de escolher."></textarea>
+            <label class="switch">
+              <input type="checkbox" id="sg-so-mulheres">
+              <span class="switch-box"></span>
+              <span class="switch-text"><b>Quero atender somente mulheres</b><small>Seu perfil só aparece para alunas.</small></span>
+            </label>
+            <button class="btn btn--block" data-step-next="2" type="button">Continuar para os documentos</button>
+          </div>
+
+          <!-- etapa 2 -->
+          <div class="signup-step" data-step="2">
+            <div id="sg-docs"></div>
+            <div class="privacy">
+              <b>Como cuidamos dos seus documentos</b>
+              <p>Os arquivos são usados só para conferir que você pode dar aula. Ficam guardados de forma criptografada, são vistos apenas pelo especialista que analisa o seu cadastro e são apagados em até 90 dias depois da aprovação. Nenhum documento aparece no seu perfil público: o aluno vê só o selo de verificado. Você pode pedir a exclusão dos seus dados a qualquer momento, conforme a Lei Geral de Proteção de Dados.</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="sg-consent">
+              <span class="switch-box"></span>
+              <span class="switch-text"><b>Autorizo a verificação dos meus documentos</b><small>Concordo com o uso descrito acima e confirmo que os arquivos são meus e estão válidos.</small></span>
+            </label>
+            <div class="row-2">
+              <button class="btn btn--line" data-step-next="1" type="button">Voltar</button>
+              <button class="btn" data-step-next="3" type="button">Revisar cadastro</button>
+            </div>
+          </div>
+
+          <!-- etapa 3 -->
+          <div class="signup-step" data-step="3">
+            <div id="sg-review"></div>
+            <div class="row-2">
+              <button class="btn btn--line" data-step-next="2" type="button">Voltar</button>
+              <button class="btn btn--volt" id="sg-send" type="button">Enviar para análise</button>
+            </div>
+            <div class="errors" id="sg-errors"></div>
+          </div>
+        </div>
+
+        <aside class="panel panel--sticky">
+          <div class="sidebar-head">Por que pedimos tudo isso</div>
+          <p class="note">A segurança é o que diferencia a Destrava. O aluno entra num carro com alguém que ele não conhece, então a conferência precisa ser levada a sério.</p>
+          <div class="check-line"><span class="tick">&#10003;</span><span>Credencial conferida no cadastro do Detran</span></div>
+          <div class="check-line"><span class="tick">&#10003;</span><span>Antecedentes criminais da Polícia Federal</span></div>
+          <div class="check-line"><span class="tick">&#10003;</span><span>CNH dentro da validade</span></div>
+          <div class="check-line"><span class="tick">&#10003;</span><span>Análise feita por uma pessoa, não por robô</span></div>
+          <p class="note">A resposta sai em até 3 dias úteis, por e-mail.</p>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== 10. LOGIN DO ESPECIALISTA ====================== -->
+  <section class="screen" id="screen-staff">
+    <div class="wrap wrap--narrow">
+      <button class="back" data-back type="button"><span>&#8592;</span> Voltar</button>
+      <span class="eyebrow">Acesso restrito</span>
+      <h1 class="page-title">Área do especialista</h1>
+      <p class="lede lede--sm">Só a equipe de verificação entra aqui. Alunos e instrutores não precisam de login.</p>
+      <div class="panel">
+        <div class="field-label">E-mail</div>
+        <div class="field"><input class="field-input" id="staff-email" type="email" placeholder="voce@destrava.app"></div>
+        <div class="field-label">Senha</div>
+        <div class="field"><input class="field-input" id="staff-senha" type="password" placeholder="Sua senha"></div>
+        <button class="btn btn--block" id="staff-enter" type="button">Entrar</button>
+        <div class="errors" id="staff-errors"></div>
+        <div class="demo-box">
+          <b>Acesso de demonstração</b>
+          <p>e-mail <code>ana@destrava.app</code> e senha <code>destrava2026</code></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== 11. PAINEL DO ESPECIALISTA ====================== -->
+  <section class="screen" id="screen-queue">
+    <div class="wrap">
+      <div class="queue-head">
+        <div>
+          <span class="eyebrow">Fila de verificação</span>
+          <h1 class="page-title" id="queue-hello">Cadastros para analisar</h1>
+        </div>
+        <button class="btn btn--line btn--sm" id="staff-exit" type="button">Sair</button>
+      </div>
+      <div class="tabs" id="queue-tabs">
+        <button class="tab-btn is-on" data-queue="pendente" type="button">Pendentes</button>
+        <button class="tab-btn" data-queue="aprovado" type="button">Aprovados</button>
+        <button class="tab-btn" data-queue="reprovado" type="button">Reprovados</button>
+      </div>
+      <div id="queue-list" class="cards"></div>
+    </div>
+  </section>
+
+  <!-- ====================== 12. ANALISE DE UM CADASTRO ====================== -->
+  <section class="screen" id="screen-review">
+    <div class="wrap">
+      <button class="back" data-back type="button"><span>&#8592;</span> Voltar para a fila</button>
+      <div id="review-content"></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============ ABAS (celular) ============ -->
+<nav class="tabbar" id="tabbar">
+  <button class="tab is-on" data-go="home" type="button"><span class="tab-ico">&#9678;</span><span>Buscar</span></button>
+  <button class="tab" data-go="lessons" type="button"><span class="tab-ico">&#9636;</span><span>Aulas</span></button>
+  <button class="tab" data-go="signup" type="button"><span class="tab-ico">&#9650;</span><span>Instrutor</span></button>
+  <button class="tab" data-go="staff" type="button"><span class="tab-ico">&#9881;</span><span>Equipe</span></button>
+</nav>
 
 <div class="toast" id="toast"></div>
 

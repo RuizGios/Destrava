@@ -1,93 +1,89 @@
 # Destrava
 
-Aplicativo web de aulas de direção avulsas para quem já tem CNH.
+Aplicativo web de aulas de direção avulsas e monitoradas para quem já tem CNH.
 Projeto da disciplina de Empreendedorismo, FT-Unicamp.
+
+No ar em: https://ruizgios.github.io/Destrava/
 
 ---
 
 ## 1. O que é cada arquivo
 
 ```
-destrava/
-├── index.html        todas as telas do app, uma dentro de cada <section>
-├── manifest.json     faz o app poder ser instalado na tela inicial do celular
+Destrava/
+├── index.html        todas as telas, uma dentro de cada <section>
+├── manifest.json     permite instalar o app na tela inicial do celular
 ├── icon.svg          ícone do app
 ├── css/
 │   └── style.css     todo o visual. As cores ficam no topo, em :root
 └── js/
-    ├── data.js       lista de instrutores, dificuldades e preços
-    └── app.js        a lógica: navegação, filtros, agendamento, GPS, avaliação
+    ├── data.js       instrutores, cidades, preços, documentos exigidos
+    └── app.js        navegação, busca, agendamento, GPS, cadastro, aprovação
 ```
 
-São cinco arquivos. Não existe instalação, não existe npm, não existe build.
-Quem souber mexer em HTML mexe aqui, e quem não souber aprende em um dia.
+Cinco arquivos. Sem instalação, sem npm, sem build.
 
 ---
 
-## 2. Como abrir no seu computador
+## 2. Como atualizar o site depois de mexer
 
-Baixe a pasta e dê dois cliques no `index.html`. O app abre no navegador.
+1. Abra https://github.com/RuizGios/Destrava
+2. Clique em **Add file**, depois em **Upload files**
+3. Arraste os arquivos trocados. O GitHub substitui os que já existem.
+4. Clique em **Commit changes**
+5. Em 1 ou 2 minutos o link já está com a versão nova. Se não mudar, aperte Ctrl+Shift+R para o navegador parar de usar a versão guardada.
 
-Isso funciona para quase tudo. Só duas coisas exigem um servidor local:
-o GPS do navegador e a instalação na tela inicial. Para ter um servidor,
-abra o terminal na pasta e rode:
+Para editar um arquivo só, dá para clicar nele no GitHub, apertar o lápis, mexer no texto e salvar. É mais rápido para mudanças pequenas.
+
+---
+
+## 3. Como rodar no seu computador
+
+Dois cliques no `index.html` resolve quase tudo. Só o GPS e a instalação na tela inicial exigem um servidor. Para ter um:
 
 ```
 python -m http.server 8000
 ```
 
-Depois acesse `http://localhost:8000` no navegador.
-
-Quem usa VS Code pode instalar a extensão **Live Server** e clicar em
-"Go Live" no canto inferior direito. Dá no mesmo e é mais fácil.
+Depois abra `http://localhost:8000`. No VS Code, a extensão **Live Server** faz o mesmo com um clique.
 
 ---
 
-## 3. Como publicar e ter o link público
+## 4. O que o app faz
 
-O plano é o GitHub Pages. É grátis, não pede cartão e o link funciona para
-qualquer pessoa. Dá para fazer tudo pelo site, sem instalar o Git.
+**Lado do aluno**
+- Busca começando pela dificuldade (estrada, baliza, ladeira, medo de dirigir e outras)
+- Filtros por gênero do instrutor, câmbio, nota e preço
+- Perfil com verificações, especialidades, carro e avaliações
+- Agendamento com data, horário, escolha do carro e cálculo do preço
+- Endereço preenchido automaticamente pelo CEP, com número e complemento separados
+- Contato de confiança obrigatório
+- Aula ao vivo com GPS, compartilhamento de localização e botão de emergência
+- Avaliação com estrelas, pontos positivos e denúncia
 
-**Passo 1.** Uma pessoa do grupo cria conta em github.com.
+**Lado do instrutor**
+- Cadastro em três etapas: dados, documentos e revisão
+- Envio de credencial do Detran, CNH, antecedentes criminais, CRLV e foto
+- Aviso de privacidade e consentimento antes de enviar
 
-**Passo 2.** Clica em **New repository**. Nome: `destrava`. Marque
-**Public**. Clique em **Create repository**.
+**Lado da equipe**
+- Login restrito para especialistas
+- Fila de cadastros pendentes, aprovados e reprovados
+- Tela de análise com todos os dados e a lista de documentos
+- Aprovar ou reprovar com observação, e o aprovado passa a aparecer na busca dos alunos
 
-**Passo 3.** Na tela do repositório, clique em **uploading an existing file**.
-Arraste a pasta inteira do projeto para a área indicada. Espere subir e
-clique em **Commit changes**.
-
-**Passo 4.** Vá em **Settings**, no menu lateral clique em **Pages**.
-Em "Source" escolha **Deploy from a branch**. Em "Branch" escolha **main**
-e a pasta **/ (root)**. Clique em **Save**.
-
-**Passo 5.** Espere de 1 a 2 minutos e recarregue a página. O link aparece
-no topo, nesse formato:
-
-```
-https://SEUUSUARIO.github.io/destrava/
-```
-
-Esse é o link que vocês mandam para o professor e para os investidores.
-
-**Passo 6.** Para os outros 6 integrantes editarem, vá em **Settings**,
-**Collaborators**, **Add people** e coloque o usuário de cada um.
-
-> Se o Git travar na véspera, o plano B é o **Netlify Drop**. Entre em
-> app.netlify.com/drop, arraste a pasta e o link sai na hora. Serve como
-> emergência, mas o GitHub é melhor porque guarda o histórico e mostra que
-> vocês desenvolveram.
+**Acesso de demonstração do especialista**
+e-mail `ana@destrava.app`, senha `destrava2026`
 
 ---
 
-## 4. Como mexer em cada coisa
+## 5. Como mexer em cada coisa
 
-### Adicionar ou mudar um instrutor
-Abra `js/data.js`. Copie um bloco inteiro de instrutor, cole embaixo e troque
-os valores. O `id` precisa ser diferente de todos os outros.
+### Adicionar instrutor
+`js/data.js`, lista `INSTRUTORES`. Copie um bloco, cole embaixo e troque os valores. O `id` tem que ser diferente de todos os outros.
 
 ### Mudar preços
-No mesmo arquivo, no topo:
+`js/data.js`, no topo:
 
 ```js
 const PRECOS = {
@@ -96,87 +92,102 @@ const PRECOS = {
 };
 ```
 
-O preço que aparece é o `preco` do instrutor, menos o desconto quando o aluno
-usa o carro dele.
-
-### Mudar as cores
-Abra `css/style.css`. As primeiras linhas são todas as cores do app:
+### Mudar as cores e as fontes
+`css/style.css`, nas primeiras linhas:
 
 ```css
---accent:#0E6B5C;     /* verde principal */
---warn:#B3321F;       /* vermelho da emergência */
+--ink:#0E1A17;     /* verde quase preto, a base */
+--volt:#CBFF4D;    /* verde limão, a cor de destaque */
+--paper:#F6F3EC;   /* creme do fundo */
+--coral:#FF5436;   /* emergência */
 ```
 
-Trocou ali, mudou no app inteiro.
+### Adicionar cidade
+`js/data.js`, lista `CIDADES`. Lembre de ter pelo menos um instrutor nela.
 
-### Adicionar uma dificuldade nova
-Em `js/data.js`, na lista `DIFICULDADES`. Depois adicione essa mesma
-dificuldade na lista `especialidades` de pelo menos um instrutor, senão a
-busca não vai achar ninguém.
+### Mudar os documentos exigidos
+`js/data.js`, lista `DOCUMENTOS`. O campo `obrigatorio` define se o cadastro pode ser enviado sem ele.
+
+### Criar outro especialista
+`js/data.js`, lista `ESPECIALISTAS`.
 
 ---
 
-## 5. Divisão sugerida entre os 7
+## 6. Identidade visual
+
+- **Cores:** verde quase preto como base, verde limão como destaque e fundo creme. A ideia é parecer confiável sem parecer autoescola.
+- **Fontes:** Space Grotesk nos títulos e Inter no texto, as duas do Google Fonts.
+- **Motivo gráfico:** a faixa tracejada da estrada, que aparece no logo, embaixo do título principal e como divisor.
+- **Botões:** fundo escuro com texto limão nas ações comuns, e limão com texto escuro na ação principal de cada tela.
+
+---
+
+## 7. Proteção dos dados dos instrutores
+
+O cadastro pede documento com foto, então isso precisa estar resolvido antes de qualquer instrutor real usar o app. O que já está no produto e o que falta:
+
+**Já está no app**
+- Só pedimos o que é necessário para verificar que a pessoa pode dar aula
+- O instrutor lê o aviso de privacidade e precisa autorizar antes de enviar
+- Nenhum documento aparece no perfil público. O aluno vê só o selo de verificado
+- Os arquivos só aparecem na tela de análise, para quem está logado como especialista
+
+**Falta fazer antes de valer para gente de verdade**
+- Os arquivos precisam ir para um armazenamento privado no servidor, com link assinado e prazo de validade, nunca ficar no navegador
+- O login do especialista precisa ser conferido no servidor. Hoje ele é conferido no próprio navegador, o que serve para demonstração e não para produção
+- Registro de quem abriu cada documento e quando
+- Apagar os arquivos automaticamente depois de 90 dias da aprovação
+- Botão para o instrutor pedir a exclusão dos dados dele
+- Definir quem é o encarregado pelos dados, que a LGPD exige
+
+Se o professor perguntar sobre LGPD, essa lista é a resposta. A base legal é o consentimento para a verificação e a execução do contrato para o resto.
+
+---
+
+## 8. O que ainda não funciona, de propósito
+
+- **Pagamento.** Na Fase 1 o aluno acerta direto com o instrutor. A comissão entra na Fase 2.
+- **Dados compartilhados entre aparelhos.** Cada navegador guarda os próprios dados. O próximo passo é o Firebase Firestore, que tem plano gratuito.
+- **Arquivos dos documentos.** O app guarda o nome, o tamanho e o tipo. O arquivo em si só existe enquanto a aba estiver aberta.
+- **Gravação de áudio.** A opção aparece e fica registrada na aula, mas ainda não grava.
+- **E-mail de aprovação.** O app mostra na tela, mas não dispara e-mail.
+
+Isso não é falha, é escopo. O MVP existe para testar se as pessoas usam o fluxo.
+
+---
+
+## 9. Divisão sugerida entre os 7
 
 | Dupla ou pessoa | Responsabilidade |
 | --- | --- |
-| 1 e 2 | Dados reais: cadastrar instrutores de verdade em `data.js` depois das entrevistas |
-| 3 | Visual: ajustar cores, ícones e a tela de abertura |
-| 4 e 5 | Tela da aula ao vivo: testar o GPS no celular de verdade, na rua |
-| 6 | Publicação: GitHub, link, testar em Android e em iPhone |
+| 1 e 2 | Cadastrar instrutores reais em `data.js` depois das entrevistas |
+| 3 | Visual: revisar cores, textos e a tela de abertura |
+| 4 e 5 | Testar o GPS na rua, no celular, com a aula em movimento |
+| 6 | Publicação no GitHub e teste em Android e em iPhone |
 | 7 | Roteiro do pitch e teste com as 3 alunas confirmadas |
 
-Combine que só uma pessoa sobe arquivos por vez, para ninguém sobrescrever o
-trabalho do outro.
+Combine que só uma pessoa sobe arquivos por vez, para ninguém sobrescrever o trabalho do outro.
 
 ---
 
-## 6. Cronograma até o pitch de 17/11
+## 10. Cronograma até o pitch de 17/11
 
 | Até | Entrega |
 | --- | --- |
-| 08/11 | Projeto no GitHub e link público funcionando |
-| 10/11 | Instrutores reais cadastrados no lugar dos de exemplo |
-| 12/11 | GPS testado na rua, no celular, com a aula em movimento |
-| 14/11 | Teste com as 3 alunas confirmadas, do início ao fim |
+| 08/11 | Versão nova no ar e testada por todo o grupo |
+| 10/11 | Instrutores reais no lugar dos de exemplo |
+| 12/11 | GPS testado na rua, no celular |
+| 14/11 | Teste do fluxo inteiro com as 3 alunas confirmadas |
 | 15/11 | Correção do que elas apontarem |
 | 16/11 | Ensaio do pitch com o link aberto no celular |
 | 17/11 | Pitch |
 
 ---
 
-## 7. O que já funciona e o que não funciona
+## 11. Se algo quebrar
 
-**Funciona de verdade:**
-busca por dificuldade e cidade, filtros, perfil do instrutor, agendamento com
-cálculo de preço, aulas salvas no aparelho, GPS ao vivo durante a aula,
-compartilhamento da localização, botão de emergência, avaliação com estrelas e
-denúncia.
+Aperte **F12** e abra a aba **Console**. O erro aparece em vermelho com o arquivo e a linha. Quase sempre é uma vírgula ou uma chave faltando em `data.js`.
 
-**Ainda não funciona, e é proposital nesta fase:**
+O mapa tem duas versões. Se a internet estiver ruim e o Leaflet não carregar, o app desenha sozinho um mapa simples e a demonstração continua. A etiqueta no canto mostra "Localização ao vivo" quando o GPS está funcionando e "Modo demonstração" quando o trajeto está sendo simulado.
 
-- **Pagamento.** Na Fase 1 o aluno acerta direto com o instrutor. Entra só na
-  Fase 2, junto com a comissão.
-- **Cadastro de instrutor pelo próprio instrutor.** Hoje o grupo cadastra à
-  mão em `data.js`, depois de conferir a credencial do Detran e os
-  antecedentes.
-- **Dados compartilhados entre aparelhos.** As aulas ficam salvas no navegador
-  de cada pessoa. Para ter banco de dados compartilhado, o próximo passo é o
-  Firebase Firestore, que tem plano gratuito.
-- **Gravação de áudio.** A opção aparece na tela, mas ainda não grava.
-
-Se o professor ou um investidor perguntar, a resposta honesta é essa: o MVP
-existe para testar se as pessoas usam o fluxo, não para faturar ainda.
-
----
-
-## 8. Se algo quebrar
-
-Aperte **F12** no navegador e abra a aba **Console**. O erro aparece lá em
-vermelho, com o nome do arquivo e a linha. Na maioria das vezes é uma vírgula
-ou uma chave faltando em `data.js`.
-
-O mapa tem duas versões. Se a internet estiver ruim e o Leaflet não carregar,
-o app desenha sozinho um mapa simples e a demonstração continua. A etiqueta no
-canto do mapa mostra "Localização ao vivo" quando o GPS está funcionando e
-"Modo demonstração" quando o trajeto está sendo simulado.
+A busca de CEP usa o ViaCEP, que é gratuito. Se ele estiver fora do ar, o aluno clica em "Não sei o CEP, quero digitar o endereço" e preenche à mão.
