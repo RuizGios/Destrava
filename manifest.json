@@ -1,0 +1,12 @@
+{
+  "name": "Destrava",
+  "short_name": "Destrava",
+  "description": "Aulas de direcao avulsas e seguras para quem ja tem CNH.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#0E6B5C",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

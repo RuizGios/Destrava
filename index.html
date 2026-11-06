@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Destrava</title>
+<meta name="description" content="Aulas de direcao avulsas e seguras para quem ja tem CNH.">
+<meta name="theme-color" content="#0E6B5C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app" id="app">
+
+  <!-- ====================== 1. INICIO / BUSCA ====================== -->
+  <section class="screen is-active" id="screen-home">
+    <header class="topbar topbar--plain">
+      <div>
+        <div class="brand">Destrava</div>
+        <div class="brand-sub" id="home-greeting">Oi, visitante</div>
+      </div>
+    </header>
+
+    <div class="content">
+      <h1 class="headline">Com o que você<br>tem dificuldade?</h1>
+
+      <div class="chips" id="home-difficulties"></div>
+
+      <div class="field-label">Onde</div>
+      <div class="field">
+        <select id="home-city" class="field-select">
+          <option value="Limeira, SP">Limeira, SP</option>
+          <option value="Campinas, SP">Campinas, SP</option>
+          <option value="Americana, SP">Americana, SP</option>
+          <option value="Piracicaba, SP">Piracicaba, SP</option>
+        </select>
+      </div>
+
+      <div class="field-label">Carro da aula</div>
+      <div class="option-group" id="home-car">
+        <button class="option is-on" data-car="aluno" type="button">
+          <span class="radio"></span>
+          <span class="option-text">
+            <b>Tenho carro próprio ou emprestado</b>
+            <small>A aula fica mais barata</small>
+          </span>
+        </button>
+        <button class="option" data-car="instrutor" type="button">
+          <span class="radio"></span>
+          <span class="option-text">
+            <b>Preciso do carro do instrutor</b>
+            <small>Com duplo pedal</small>
+          </span>
+        </button>
+      </div>
+
+      <button class="btn btn--block" id="home-search" type="button">Ver instrutores</button>
+      <p class="note">Todos os instrutores têm credencial do Detran e antecedentes verificados.</p>
+    </div>
+  </section>
+
+  <!-- ====================== 2. LISTA ====================== -->
+  <section class="screen" id="screen-list">
+    <header class="topbar">
+      <button class="icon-btn" data-back="home" type="button" aria-label="Voltar">&#8592;</button>
+      <h2 id="list-title">Instrutores</h2>
+    </header>
+
+    <div class="content">
+      <div class="filterbar" id="list-filters">
+        <button class="fchip" data-filter="mulher" type="button">Instrutora mulher</button>
+        <button class="fchip" data-filter="automatico" type="button">Câmbio automático</button>
+        <button class="fchip" data-filter="nota" type="button">Nota 4,5+</button>
+        <button class="fchip" data-filter="preco" type="button">Até R$ 80</button>
+      </div>
+      <div id="list-count" class="list-count"></div>
+      <div id="list-results"></div>
+    </div>
+  </section>
+
+  <!-- ====================== 3. PERFIL ====================== -->
+  <section class="screen" id="screen-profile">
+    <header class="topbar">
+      <button class="icon-btn" data-back="list" type="button" aria-label="Voltar">&#8592;</button>
+      <h2>Perfil do instrutor</h2>
+    </header>
+    <div class="content" id="profile-content"></div>
+  </section>
+
+  <!-- ====================== 4. AGENDAMENTO ====================== -->
+  <section class="screen" id="screen-booking">
+    <header class="topbar">
+      <button class="icon-btn" data-back="profile" type="button" aria-label="Voltar">&#8592;</button>
+      <h2 id="booking-title">Agendar aula</h2>
+    </header>
+    <div class="content">
+      <div class="field-label">Data</div>
+      <div class="slots" id="booking-dates"></div>
+
+      <div class="field-label">Horário</div>
+      <div class="slots" id="booking-times"></div>
+
+      <div class="field-label">Carro da aula</div>
+      <div class="option-group" id="booking-car"></div>
+
+      <div class="field-label">Ponto de encontro</div>
+      <div class="field">
+        <input class="field-input" id="booking-place" type="text" placeholder="Rua, número e bairro">
+      </div>
+
+      <div class="field-label">Contato de confiança</div>
+      <div class="field">
+        <input class="field-input" id="booking-contact" type="text" placeholder="Nome e telefone de quem acompanha a aula">
+      </div>
+
+      <label class="switch">
+        <input type="checkbox" id="booking-record">
+        <span class="switch-box"></span>
+        <span class="switch-text">
+          <b>Gravar o áudio da aula</b>
+          <small>Opcional. A instrutora também precisa aceitar. Apagado em 30 dias.</small>
+        </span>
+      </label>
+
+      <div class="summary" id="booking-summary"></div>
+      <button class="btn btn--block" id="booking-confirm" type="button">Confirmar agendamento</button>
+      <p class="note">Nesta versão de teste o pagamento é combinado direto com o instrutor.</p>
+    </div>
+  </section>
+
+  <!-- ====================== 5. CONFIRMACAO ====================== -->
+  <section class="screen" id="screen-done">
+    <div class="content content--center" id="done-content"></div>
+  </section>
+
+  <!-- ====================== 6. MINHAS AULAS ====================== -->
+  <section class="screen" id="screen-lessons">
+    <header class="topbar topbar--plain">
+      <h2>Minhas aulas</h2>
+    </header>
+    <div class="content" id="lessons-content"></div>
+  </section>
+
+  <!-- ====================== 7. AULA EM ANDAMENTO ====================== -->
+  <section class="screen" id="screen-live">
+    <header class="topbar">
+      <h2>Aula em andamento</h2>
+    </header>
+    <div class="live">
+      <div class="map-wrap">
+        <div id="map"></div>
+        <div class="live-tag"><span class="live-dot"></span><span id="live-gps-label">Localização ao vivo</span></div>
+      </div>
+      <div class="live-body">
+        <h3 id="live-title">Aula</h3>
+        <p class="live-meta" id="live-meta"></p>
+        <div class="live-actions">
+          <button class="btn btn--ghost" id="live-share" type="button">Compartilhar<br>com contato</button>
+          <button class="btn btn--danger" id="live-sos" type="button">Botão de<br>emergência</button>
+        </div>
+        <p class="note" id="live-note">O trajeto fica registrado. Se a aula sair muito da região combinada, o app avisa você e seu contato de confiança.</p>
+        <button class="btn btn--block" id="live-finish" type="button">Encerrar aula</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== 8. AVALIACAO ====================== -->
+  <section class="screen" id="screen-rate">
+    <header class="topbar">
+      <h2>Como foi a aula?</h2>
+    </header>
+    <div class="content" id="rate-content"></div>
+  </section>
+
+  <!-- ====================== NAV ====================== -->
+  <nav class="tabbar" id="tabbar">
+    <button class="tab is-on" data-tab="home" type="button">
+      <span class="tab-ico">&#9679;</span><span>Buscar</span>
+    </button>
+    <button class="tab" data-tab="lessons" type="button">
+      <span class="tab-ico">&#9632;</span><span>Minhas aulas</span>
+    </button>
+  </nav>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
