@@ -42,9 +42,34 @@ const ESPECIALISTAS = [
 ];
 
 const INSTRUTORES = [
+  /* ---- Instrutores usados nos testes internos do grupo ----
+     Italo e Augusto fazem o papel de instrutor nos testes com
+     Giovana e Yasmin. O endereco e o do predio onde os quatro moram.
+     Preencha o campo email antes do teste, se quiser receber o aviso. */
+  {
+    id: "italo", primeira: true, nome: "Italo Carvalhaes", iniciais: "IC", genero: "m",
+    cidade: "Limeira, SP", bairro: "Jardim Esmeralda",
+    email: "",
+    nota: 5.0, aulas: 0, anos: 2, preco: 70, novo: true,
+    cambio: "Manual e automático", carro: "Onix 2021, duplo pedal",
+    especialidades: ["Dirigir na cidade", "Baliza", "Medo de dirigir", "Voltar a dirigir"],
+    bio: "Instrutor de teste do grupo Destrava. Atendo na região do Jardim Esmeralda.",
+    avaliacoes: []
+  },
+  {
+    id: "augusto", primeira: true, nome: "Augusto Toledo", iniciais: "AT", genero: "m",
+    cidade: "Limeira, SP", bairro: "Jardim Esmeralda",
+    email: "",
+    nota: 5.0, aulas: 0, anos: 3, preco: 75, novo: true,
+    cambio: "Automático", carro: "HB20 2022, duplo pedal",
+    especialidades: ["Pegar estrada", "Dirigir à noite", "Dirigir na cidade", "Ladeira"],
+    bio: "Instrutor de teste do grupo Destrava. Atendo na região do Jardim Esmeralda.",
+    avaliacoes: []
+  },
   {
     id: "renata", nome: "Renata Souza", iniciais: "RS", genero: "f",
     cidade: "Limeira, SP", bairro: "Centro",
+    email: "",
     nota: 4.8, aulas: 94, anos: 7, preco: 85,
     cambio: "Manual e automático", carro: "Onix 2021, duplo pedal",
     especialidades: ["Pegar estrada", "Dirigir na cidade", "Medo de dirigir", "Voltar a dirigir"],
@@ -57,6 +82,7 @@ const INSTRUTORES = [
   {
     id: "marcos", primeira: true, nome: "Marcos Vieira", iniciais: "MV", genero: "m",
     cidade: "Limeira, SP", bairro: "Centro",
+    email: "",
     nota: 4.6, aulas: 143, anos: 9, preco: 80,
     cambio: "Manual e automático", carro: "Argo 2020, duplo pedal",
     especialidades: ["Baliza", "Dirigir na cidade", "Ladeira", "Câmbio manual"],
@@ -68,6 +94,7 @@ const INSTRUTORES = [
   {
     id: "carla", primeira: true, nome: "Carla Martins", iniciais: "CM", genero: "f",
     cidade: "Limeira, SP", bairro: "Vila Queiroz",
+    email: "",
     nota: 4.9, aulas: 128, anos: 11, preco: 95,
     cambio: "Automático", carro: "HB20 2022, duplo pedal",
     especialidades: ["Pegar estrada", "Dirigir na cidade", "Ladeira"],
@@ -79,6 +106,7 @@ const INSTRUTORES = [
   {
     id: "joel", primeira: true, nome: "Joel Bastos", iniciais: "JB", genero: "m",
     cidade: "Limeira, SP", bairro: "Jardim Nova Europa",
+    email: "",
     nota: 4.7, aulas: 112, anos: 13, preco: 82,
     cambio: "Manual", carro: "Saveiro 2019, duplo pedal",
     especialidades: ["Câmbio manual", "Ladeira", "Pegar estrada", "Voltar a dirigir"],
@@ -90,6 +118,7 @@ const INSTRUTORES = [
   {
     id: "priscila", nome: "Priscila Alves", iniciais: "PA", genero: "f",
     cidade: "Limeira, SP", bairro: "Jardim Glória",
+    email: "",
     nota: 4.7, aulas: 61, anos: 4, preco: 75,
     cambio: "Manual", carro: "Gol 2019, duplo pedal",
     especialidades: ["Dirigir à noite", "Pegar estrada", "Câmbio manual"],
@@ -101,6 +130,7 @@ const INSTRUTORES = [
   {
     id: "wesley", nome: "Wesley Nunes", iniciais: "WN", genero: "m",
     cidade: "Limeira, SP", bairro: "Vila Cidade Jardim",
+    email: "",
     nota: 4.5, aulas: 47, anos: 3, preco: 70,
     cambio: "Automático", carro: "Kwid 2022, duplo pedal",
     especialidades: ["Medo de dirigir", "Dirigir na cidade", "Baliza"],
@@ -112,6 +142,7 @@ const INSTRUTORES = [
   {
     id: "beatriz", nome: "Beatriz Rocha", iniciais: "BR", genero: "f",
     cidade: "Campinas, SP", bairro: "Barão Geraldo",
+    email: "",
     nota: 5.0, aulas: 37, anos: 3, preco: 90,
     cambio: "Automático", carro: "Kwid 2023, duplo pedal",
     especialidades: ["Medo de dirigir", "Voltar a dirigir", "Dirigir na cidade"],
@@ -124,6 +155,7 @@ const INSTRUTORES = [
   {
     id: "eduardo", nome: "Eduardo Lima", iniciais: "EL", genero: "m",
     cidade: "Campinas, SP", bairro: "Cambuí",
+    email: "",
     nota: 4.5, aulas: 88, anos: 6, preco: 78,
     cambio: "Manual", carro: "Polo 2021, duplo pedal",
     especialidades: ["Pegar estrada", "Câmbio manual", "Ladeira"],
@@ -135,6 +167,7 @@ const INSTRUTORES = [
   {
     id: "henrique", primeira: true, nome: "Henrique Dias", iniciais: "HD", genero: "m",
     cidade: "Campinas, SP", bairro: "Taquaral",
+    email: "",
     nota: 4.8, aulas: 156, anos: 10, preco: 88,
     cambio: "Manual e automático", carro: "Corolla 2021, duplo pedal",
     especialidades: ["Dirigir na cidade", "Dirigir à noite", "Baliza", "Voltar a dirigir"],
@@ -146,6 +179,7 @@ const INSTRUTORES = [
   {
     id: "tatiane", primeira: true, nome: "Tatiane Ferraz", iniciais: "TF", genero: "f",
     cidade: "Americana, SP", bairro: "Centro",
+    email: "",
     nota: 4.9, aulas: 72, anos: 5, preco: 72,
     cambio: "Automático", carro: "Mobi 2022, duplo pedal",
     especialidades: ["Medo de dirigir", "Baliza", "Dirigir na cidade"],
@@ -157,6 +191,7 @@ const INSTRUTORES = [
   {
     id: "anderson", primeira: true, nome: "Anderson Prado", iniciais: "AP", genero: "m",
     cidade: "Americana, SP", bairro: "Jardim São Paulo",
+    email: "",
     nota: 4.6, aulas: 65, anos: 7, preco: 76,
     cambio: "Manual e automático", carro: "Onix 2020, duplo pedal",
     especialidades: ["Pegar estrada", "Ladeira", "Câmbio manual", "Voltar a dirigir"],
@@ -168,6 +203,7 @@ const INSTRUTORES = [
   {
     id: "rogerio", primeira: true, nome: "Rogério Pinto", iniciais: "RP", genero: "m",
     cidade: "Piracicaba, SP", bairro: "Paulista",
+    email: "",
     nota: 4.4, aulas: 51, anos: 4, preco: 70,
     cambio: "Manual e automático", carro: "Fiesta 2018, duplo pedal",
     especialidades: ["Dirigir na cidade", "Baliza", "Voltar a dirigir"],

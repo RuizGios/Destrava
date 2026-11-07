@@ -31,6 +31,8 @@ let aulas = Armazem.ler("aulas", []);
 let candidaturas = Armazem.ler("candidaturas", null);
 if (!candidaturas) { candidaturas = PENDENTES_EXEMPLO.slice(); Armazem.gravar("candidaturas", candidaturas); }
 let sessao = Armazem.ler("sessao", null);
+let contas  = Armazem.ler("contas", []);
+let usuario = Armazem.ler("usuario", null);
 
 /* arquivos enviados ficam so na memoria desta sessao.
    O navegador nao guarda arquivo grande, entao o que vai para o
@@ -429,6 +431,7 @@ function montarAgendamento() {
     areaCarro.appendChild(b);
   });
 
+  desenharConta();
   atualizarResumo();
 }
 
@@ -438,6 +441,80 @@ function atualizarResumo() {
     <div class="summary-line"><span>Aula de 1 hora</span><span>${dinheiro(v)}</span></div>
     <div class="summary-line"><span>Taxa de segurança</span><span>${dinheiro(PRECOS.taxaSeguranca)}</span></div>
     <div class="summary-line summary-line--total"><span>Total</span><span>${dinheiro(v + PRECOS.taxaSeguranca)}</span></div>`;
+}
+
+/* ============================================================
+   CONTA DO ALUNO
+   Guardada no proprio navegador. Serve para identificar quem marcou
+   a aula e para ter um e-mail de contato. Nao e uma autenticacao de
+   verdade: para valer, a senha tem que ser conferida num servidor.
+   ============================================================ */
+function desenharConta() {
+  const alvo = $("#booking-account");
+  if (!alvo) return;
+
+  if (usuario) {
+    alvo.innerHTML = `
+      <div class="conta-ok">
+        <div class="avatar">${escapar(usuario.nome.split(" ").map(p => p[0]).slice(0, 2).join("").toUpperCase())}</div>
+        <div class="conta-dados">
+          <b>${escapar(usuario.nome)}</b>
+          <span>${escapar(usuario.email)}</span>
+        </div>
+        <button class="linkish" id="conta-sair" type="button">Trocar</button>
+      </div>
+      <p class="hint">A confirmação da aula vai para esse e-mail.</p>`;
+    $("#conta-sair").addEventListener("click", () => {
+      usuario = null;
+      Armazem.gravar("usuario", null);
+      desenharConta();
+    });
+    return;
+  }
+
+  alvo.innerHTML = `
+    <div class="row-2">
+      <div class="field"><input class="field-input" id="conta-nome" type="text" placeholder="Seu nome"></div>
+      <div class="field"><input class="field-input" id="conta-email" type="email" placeholder="Seu e-mail"></div>
+    </div>
+    <div class="field"><input class="field-input" id="conta-senha" type="password" placeholder="Senha, no mínimo 6 caracteres"></div>
+    <button class="btn btn--line btn--sm btn--block" id="conta-entrar" type="button">Criar conta ou entrar</button>
+    <p class="hint">Se você já tem conta, use o mesmo e-mail e a mesma senha para entrar.</p>`;
+
+  $("#conta-entrar").addEventListener("click", entrarOuCriar);
+  $("#conta-senha").addEventListener("keydown", e => { if (e.key === "Enter") entrarOuCriar(); });
+}
+
+function entrarOuCriar() {
+  const nome  = $("#conta-nome").value.trim();
+  const email = $("#conta-email").value.trim().toLowerCase();
+  const senha = $("#conta-senha").value;
+  const problemas = [];
+
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) problemas.push("Informe um e-mail válido.");
+  if (senha.length < 6) problemas.push("A senha precisa ter pelo menos 6 caracteres.");
+
+  const existente = contas.find(c => c.email === email);
+  if (existente) {
+    if (existente.senha !== senha) problemas.push("Essa senha não confere com a conta desse e-mail.");
+  } else if (nome.split(" ").filter(Boolean).length < 1) {
+    problemas.push("Informe seu nome para criar a conta.");
+  }
+
+  if (problemas.length) { erros("#booking-errors", problemas); aviso(problemas[0]); return; }
+
+  if (existente) {
+    usuario = { nome: existente.nome, email: existente.email };
+    aviso("Bem-vindo de volta, " + existente.nome.split(" ")[0] + ".");
+  } else {
+    contas.push({ nome, email, senha });
+    Armazem.gravar("contas", contas);
+    usuario = { nome, email };
+    aviso("Conta criada.");
+  }
+  Armazem.gravar("usuario", usuario);
+  erros("#booking-errors", []);
+  desenharConta();
 }
 
 /* ============================================================
@@ -465,10 +542,17 @@ function travarEndereco(travado) {
   });
 }
 
+let buscaEmCurso = 0;
+
 async function buscarCep() {
   const cep = soDigitos($("#booking-cep").value);
   const status = $("#cep-status");
   if (cep.length !== 8) { estado.cepOk = false; return; }
+
+  // cada busca ganha um numero. Se outra busca comecar, ou se a pessoa
+  // escolher digitar o endereco a mao, a resposta antiga e descartada.
+  const minhaVez = ++buscaEmCurso;
+  const desatualizada = () => minhaVez !== buscaEmCurso || estado.enderecoManual;
 
   status.className = "hint";
   status.textContent = "Procurando o endereço...";
@@ -476,6 +560,7 @@ async function buscarCep() {
   try {
     const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
     const j = await r.json();
+    if (desatualizada()) return;
     if (j.erro) throw new Error("nao achou");
     $("#booking-rua").value = j.logradouro || "";
     $("#booking-bairro").value = j.bairro || "";
@@ -489,6 +574,7 @@ async function buscarCep() {
       : "CEP de área geral. Complete a rua à mão.";
     $("#booking-numero").focus();
   } catch (e) {
+    if (desatualizada()) return;
     estado.cepOk = false;
     status.className = "hint is-bad";
     status.textContent = "Não encontramos esse CEP. Confira os números ou digite o endereço à mão.";
@@ -504,6 +590,7 @@ function montarCamposEndereco() {
   cep.addEventListener("blur", buscarCep);
 
   $("#cep-manual").addEventListener("click", () => {
+    buscaEmCurso++;
     estado.enderecoManual = true;
     travarEndereco(false);
     $("#cep-status").className = "hint";
@@ -548,6 +635,8 @@ function validarAgendamento() {
     if (!$("#booking-cidade").value.trim()) { lista.push("Informe a cidade."); marcar("#booking-cidade"); }
   }
 
+  if (!usuario) lista.push("Crie sua conta ou entre para confirmar a aula.");
+
   const nome = $("#booking-contato-nome").value.trim();
   const telDig = soDigitos($("#booking-contato-tel").value);
   if (nome.length < 2) { lista.push("Informe o nome do seu contato de confiança."); marcar("#booking-contato-nome"); }
@@ -556,7 +645,7 @@ function validarAgendamento() {
   return lista;
 }
 
-function confirmarAgendamento() {
+async function confirmarAgendamento() {
   const problemas = validarAgendamento();
   if (problemas.length) {
     erros("#booking-errors", problemas);
@@ -581,8 +670,13 @@ function confirmarAgendamento() {
     status: "agendada", nota: null
   };
 
+  aula.alunoNome = usuario.nome;
+  aula.alunoEmail = usuario.email;
+
   aulas.unshift(aula);
   Armazem.gravar("aulas", aulas);
+
+  const envio = await enviarEmails(aula, usuario, i);
 
   $("#done-content").innerHTML = `
     <div class="big-check">&#10003;</div>
@@ -590,7 +684,10 @@ function confirmarAgendamento() {
     <p class="done-text">
       ${escapar(aula.instrutorNome)} encontra você em<br><b>${escapar(aula.endereco)}</b><br>
       ${escapar(aula.semana)} ${escapar(aula.dataRotulo)} às ${escapar(aula.hora)}.<br><br>
-      Avisamos ${escapar(aula.contatoNome.split(" ")[0])} assim que a aula começar.
+      Avisamos ${escapar(aula.contatoNome.split(" ")[0])} assim que a aula começar.<br><br>
+      ${envio.enviado
+        ? "Enviamos a confirmação para <b>" + escapar(usuario.email) + "</b> e avisamos o instrutor."
+        : "A confirmação apareceu na tela porque o envio de e-mail ainda não foi ligado."}
     </p>
     <button class="btn btn--block" id="done-lessons" type="button">Ver minhas aulas</button>
     <button class="btn btn--line btn--block btn--sm" id="done-home" type="button">Voltar ao início</button>`;
@@ -1293,6 +1390,10 @@ function iniciar() {
   montarLogin();
 
   $("#booking-confirm").addEventListener("click", confirmarAgendamento);
+  $("#modal-fechar").addEventListener("click", () => { $("#modal-email").hidden = true; });
+  $("#modal-email").addEventListener("click", e => {
+    if (e.target.id === "modal-email") $("#modal-email").hidden = true;
+  });
   $$("[data-back]").forEach(b => b.addEventListener("click", voltar));
   $$("[data-go]").forEach(b => b.addEventListener("click", () => irPara(b.dataset.go)));
 
