@@ -7,8 +7,8 @@
 <meta name="description" content="Aulas de direcao avulsas e monitoradas para quem ja tem CNH.">
 <meta name="theme-color" content="#0E1A17">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<link rel="manifest" href="manifest.json">
-<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.json?v=3">
+<link rel="icon" href="icon.svg?v=3" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -194,6 +194,9 @@
             <input class="field-input" id="booking-complemento" type="text" placeholder="Complemento ou ponto de referência (opcional)">
           </div>
           <button class="linkish" id="cep-manual" type="button">Não sei o CEP, quero digitar o endereço</button>
+
+          <div class="field-label">Sua conta</div>
+          <div id="booking-account"></div>
 
           <div class="field-label">Contato de confiança</div>
           <div class="row-2">
@@ -478,8 +481,21 @@
 
 <div class="toast" id="toast"></div>
 
+<div class="modal" id="modal-email" hidden>
+  <div class="modal-caixa">
+    <div class="modal-topo">
+      <h3 class="h3">Pré-visualização dos e-mails</h3>
+      <button class="modal-x" id="modal-fechar" type="button" aria-label="Fechar">&times;</button>
+    </div>
+    <p class="note" id="modal-aviso"></p>
+    <div id="modal-corpo"></div>
+  </div>
+</div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4.4.1/dist/email.min.js"></script>
 <script src="js/data.js"></script>
+<script src="js/email.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
