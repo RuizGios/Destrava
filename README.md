@@ -52,7 +52,8 @@ Depois abra `http://localhost:8000`. No VS Code, a extensão **Live Server** faz
 ## 4. O que o app faz
 
 **Lado do aluno**
-- Busca começando pela dificuldade (estrada, baliza, ladeira, medo de dirigir e outras)
+- Escolha entre dois perfis: já tenho CNH ou estou tirando a primeira habilitação
+- Busca começando pela dificuldade (estrada, baliza, ladeira, medo de dirigir e outras), com a opção "qualquer uma, só quero praticar" para quem não sabe dizer
 - Filtros por gênero do instrutor, câmbio, nota e preço
 - Perfil com verificações, especialidades, carro e avaliações
 - Agendamento com data, horário, escolha do carro e cálculo do preço
@@ -60,6 +61,8 @@ Depois abra `http://localhost:8000`. No VS Code, a extensão **Live Server** faz
 - Contato de confiança obrigatório
 - Aula ao vivo com GPS, compartilhamento de localização e botão de emergência
 - Avaliação com estrelas, pontos positivos e denúncia
+
+No modo primeira habilitação o app mostra o aviso sobre a LAV, trava a aula no carro do instrutor com duplo pedal e lista só os instrutores que atendem esse público. O campo `primeira: true` em `js/data.js` define quem atende.
 
 **Lado do instrutor**
 - Cadastro em três etapas: dados, documentos e revisão
@@ -110,6 +113,9 @@ const PRECOS = {
 
 ### Criar outro especialista
 `js/data.js`, lista `ESPECIALISTAS`.
+
+### Mudar os nomes do rodapé
+`index.html`, dentro de `<footer class="rodape">`, na lista `equipe-lista`.
 
 ---
 

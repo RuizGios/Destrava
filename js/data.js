@@ -4,6 +4,9 @@
    Para adicionar um instrutor, copie um bloco e troque os valores.
    ============================================================ */
 
+/* Opcao para quem nao sabe dizer a dificuldade e so quer praticar. */
+const QUALQUER = "Qualquer uma, só quero praticar";
+
 const DIFICULDADES = [
   "Pegar estrada",
   "Dirigir na cidade",
@@ -14,6 +17,14 @@ const DIFICULDADES = [
   "Câmbio manual",
   "Voltar a dirigir"
 ];
+
+/* Quem esta usando o app. Muda quem aparece na busca e as regras da aula. */
+const PERFIS = [
+  { id: "habilitado", titulo: "Já tenho CNH", desc: "Quero praticar ou perder o medo" },
+  { id: "primeira",   titulo: "Estou tirando a primeira", desc: "Preciso das aulas oficiais" }
+];
+
+const AVISO_PRIMEIRA = "Para a primeira habilitação a aula é registrada no Detran e só pode ser feita no carro do instrutor, com duplo pedal. Você precisa estar com a LAV (Licença de Aprendizagem Veicular) em dia.";
 
 const CIDADES = ["Limeira, SP", "Campinas, SP", "Americana, SP", "Piracicaba, SP"];
 
@@ -44,7 +55,7 @@ const INSTRUTORES = [
     ]
   },
   {
-    id: "marcos", nome: "Marcos Vieira", iniciais: "MV", genero: "m",
+    id: "marcos", primeira: true, nome: "Marcos Vieira", iniciais: "MV", genero: "m",
     cidade: "Limeira, SP", bairro: "Centro",
     nota: 4.6, aulas: 143, anos: 9, preco: 80,
     cambio: "Manual e automático", carro: "Argo 2020, duplo pedal",
@@ -55,7 +66,7 @@ const INSTRUTORES = [
     ]
   },
   {
-    id: "carla", nome: "Carla Martins", iniciais: "CM", genero: "f",
+    id: "carla", primeira: true, nome: "Carla Martins", iniciais: "CM", genero: "f",
     cidade: "Limeira, SP", bairro: "Vila Queiroz",
     nota: 4.9, aulas: 128, anos: 11, preco: 95,
     cambio: "Automático", carro: "HB20 2022, duplo pedal",
@@ -66,7 +77,7 @@ const INSTRUTORES = [
     ]
   },
   {
-    id: "joel", nome: "Joel Bastos", iniciais: "JB", genero: "m",
+    id: "joel", primeira: true, nome: "Joel Bastos", iniciais: "JB", genero: "m",
     cidade: "Limeira, SP", bairro: "Jardim Nova Europa",
     nota: 4.7, aulas: 112, anos: 13, preco: 82,
     cambio: "Manual", carro: "Saveiro 2019, duplo pedal",
@@ -122,7 +133,7 @@ const INSTRUTORES = [
     ]
   },
   {
-    id: "henrique", nome: "Henrique Dias", iniciais: "HD", genero: "m",
+    id: "henrique", primeira: true, nome: "Henrique Dias", iniciais: "HD", genero: "m",
     cidade: "Campinas, SP", bairro: "Taquaral",
     nota: 4.8, aulas: 156, anos: 10, preco: 88,
     cambio: "Manual e automático", carro: "Corolla 2021, duplo pedal",
@@ -133,7 +144,7 @@ const INSTRUTORES = [
     ]
   },
   {
-    id: "tatiane", nome: "Tatiane Ferraz", iniciais: "TF", genero: "f",
+    id: "tatiane", primeira: true, nome: "Tatiane Ferraz", iniciais: "TF", genero: "f",
     cidade: "Americana, SP", bairro: "Centro",
     nota: 4.9, aulas: 72, anos: 5, preco: 72,
     cambio: "Automático", carro: "Mobi 2022, duplo pedal",
@@ -144,7 +155,7 @@ const INSTRUTORES = [
     ]
   },
   {
-    id: "anderson", nome: "Anderson Prado", iniciais: "AP", genero: "m",
+    id: "anderson", primeira: true, nome: "Anderson Prado", iniciais: "AP", genero: "m",
     cidade: "Americana, SP", bairro: "Jardim São Paulo",
     nota: 4.6, aulas: 65, anos: 7, preco: 76,
     cambio: "Manual e automático", carro: "Onix 2020, duplo pedal",
@@ -155,7 +166,7 @@ const INSTRUTORES = [
     ]
   },
   {
-    id: "rogerio", nome: "Rogério Pinto", iniciais: "RP", genero: "m",
+    id: "rogerio", primeira: true, nome: "Rogério Pinto", iniciais: "RP", genero: "m",
     cidade: "Piracicaba, SP", bairro: "Paulista",
     nota: 4.4, aulas: 51, anos: 4, preco: 70,
     cambio: "Manual e automático", carro: "Fiesta 2018, duplo pedal",

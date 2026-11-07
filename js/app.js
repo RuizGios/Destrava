@@ -39,6 +39,7 @@ const arquivosNaMemoria = {};
 
 /* ---------- ESTADO ---------- */
 const estado = {
+  perfil: "habilitado",
   dificuldade: null,
   cidade: CIDADES[0],
   carro: "aluno",
@@ -133,9 +134,46 @@ function erros(alvo, lista) {
 /* ============================================================
    TELA 1 - INICIO
    ============================================================ */
+/* trava a escolha do carro quando o aluno esta tirando a primeira
+   habilitacao, porque nesse caso a aula so vale no carro do instrutor */
+function aplicarPerfil() {
+  const primeira = estado.perfil === "primeira";
+
+  const aviso = $("#home-aviso");
+  aviso.textContent = primeira ? AVISO_PRIMEIRA : "";
+  aviso.classList.toggle("is-hidden", !primeira);
+
+  $("#hero-eyebrow").textContent = primeira
+    ? "Para quem está tirando a primeira habilitação"
+    : "Para quem já tem CNH";
+
+  const opcaoAluno = $('#home-car .option[data-car="aluno"]');
+  opcaoAluno.classList.toggle("is-hidden", primeira);
+  if (primeira) {
+    estado.carro = "instrutor";
+    $$("#home-car .option").forEach(o => o.classList.toggle("is-on", o.dataset.car === "instrutor"));
+  }
+  estado.agendamento.carro = estado.carro;
+}
+
 function montarInicio() {
+  // perfil do aluno
+  const areaPerfil = $("#home-profile");
+  PERFIS.forEach(p => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "seg-btn" + (p.id === estado.perfil ? " is-on" : "");
+    b.innerHTML = `${escapar(p.titulo)}<small>${escapar(p.desc)}</small>`;
+    b.addEventListener("click", () => {
+      estado.perfil = p.id;
+      $$("#home-profile button").forEach(x => x.classList.toggle("is-on", x === b));
+      aplicarPerfil();
+    });
+    areaPerfil.appendChild(b);
+  });
+
   const area = $("#home-difficulties");
-  DIFICULDADES.forEach(d => {
+  [QUALQUER].concat(DIFICULDADES).forEach(d => {
     const b = document.createElement("button");
     b.type = "button"; b.className = "chip"; b.textContent = d;
     b.addEventListener("click", () => {
@@ -155,10 +193,12 @@ function montarInicio() {
   }));
 
   $("#home-search").addEventListener("click", () => {
-    if (!estado.dificuldade) { aviso("Escolha com o que você tem dificuldade."); return; }
+    if (!estado.dificuldade) { aviso("Escolha uma dificuldade, ou a opção de só querer praticar."); return; }
     estado.agendamento.carro = estado.carro;
     irPara("list");
   });
+
+  aplicarPerfil();
 }
 
 /* ============================================================
@@ -168,9 +208,12 @@ const precoDe = (i, tipo) => tipo === "aluno" ? i.preco - PRECOS.descontoCarroAl
 
 function filtrar() {
   const f = estado.filtros;
+  const primeira = estado.perfil === "primeira";
   return todosInstrutores().filter(i => {
     if (i.cidade !== estado.cidade) return false;
-    if (estado.dificuldade && !i.especialidades.includes(estado.dificuldade)) return false;
+    if (primeira && !i.primeira) return false;
+    if (estado.dificuldade && estado.dificuldade !== QUALQUER
+        && !i.especialidades.includes(estado.dificuldade)) return false;
     if (f.has("mulher") && i.genero !== "f") return false;
     if (f.has("homem") && (i.genero !== "m" || i.soMulheres)) return false;
     if (f.has("automatico") && !i.cambio.toLowerCase().includes("autom")) return false;
@@ -182,9 +225,11 @@ function filtrar() {
 }
 
 function montarLista() {
-  $("#list-title").textContent = estado.dificuldade
-    ? "Instrutores para " + estado.dificuldade.toLowerCase()
-    : "Instrutores";
+  $("#list-title").textContent =
+    estado.perfil === "primeira" ? "Instrutores para primeira habilitação"
+    : (estado.dificuldade && estado.dificuldade !== QUALQUER)
+      ? "Instrutores para " + estado.dificuldade.toLowerCase()
+      : "Instrutores disponíveis";
 
   const achados = filtrar();
   const alvo = $("#list-results");
@@ -358,10 +403,18 @@ function montarAgendamento() {
   });
 
   const areaCarro = $("#booking-car"); areaCarro.innerHTML = "";
-  [
-    { id: "aluno", t: "Meu carro", d: "Você dirige o carro que já conhece", v: i.preco - PRECOS.descontoCarroAluno },
-    { id: "instrutor", t: "Carro do instrutor", d: i.carro, v: i.preco }
-  ].forEach(op => {
+  const primeira = estado.perfil === "primeira";
+  if (primeira) {
+    estado.agendamento.carro = "instrutor";
+    const nota = document.createElement("p");
+    nota.className = "aviso";
+    nota.style.marginTop = "0";
+    nota.textContent = AVISO_PRIMEIRA;
+    areaCarro.appendChild(nota);
+  }
+  (primeira ? [] : [{ id: "aluno", t: "Meu carro", d: "Você dirige o carro que já conhece", v: i.preco - PRECOS.descontoCarroAluno }])
+  .concat([{ id: "instrutor", t: "Carro do instrutor", d: i.carro, v: i.preco }])
+  .forEach(op => {
     const b = document.createElement("button");
     b.type = "button";
     b.className = "option" + (op.id === estado.agendamento.carro ? " is-on" : "");

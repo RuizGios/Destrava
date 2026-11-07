@@ -40,7 +40,7 @@
     <div class="hero">
       <div class="wrap hero-grid">
         <div class="hero-text">
-          <span class="eyebrow">Para quem já tem CNH</span>
+          <span class="eyebrow" id="hero-eyebrow">Para quem já tem CNH</span>
           <h1 class="display">Destrave<br>o volante.</h1>
           <p class="lede">Aulas avulsas com instrutor que você escolhe, aula acompanhada por GPS e nenhum pacote de autoescola.</p>
           <ul class="hero-points">
@@ -51,8 +51,11 @@
         </div>
 
         <div class="searchcard">
+          <div class="seg" id="home-profile"></div>
+
           <h2 class="card-title">Com o que você tem dificuldade?</h2>
           <div class="chips" id="home-difficulties"></div>
+          <p class="aviso is-hidden" id="home-aviso"></p>
 
           <div class="field-label">Onde</div>
           <div class="field">
@@ -411,6 +414,59 @@
   </section>
 
 </main>
+
+<!-- ============ RODAPE ============ -->
+<footer class="rodape">
+  <div class="lane" aria-hidden="true"></div>
+  <div class="wrap rodape-in">
+
+    <div class="rodape-top">
+      <div class="rodape-marca">
+        <div class="logo" style="pointer-events:none">
+          <span class="logo-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="logo-word">destrava</span>
+        </div>
+        <p>Aulas de direção avulsas e monitoradas para quem já tem CNH, com instrutor verificado e aula acompanhada por GPS.</p>
+      </div>
+
+      <div class="rodape-col">
+        <h4>O aplicativo</h4>
+        <button data-go="home" type="button">Buscar aula</button>
+        <button data-go="lessons" type="button">Minhas aulas</button>
+        <button data-go="signup" type="button">Seja instrutor</button>
+        <button data-go="staff" type="button">Área do especialista</button>
+      </div>
+
+      <div class="rodape-col">
+        <h4>Segurança</h4>
+        <span>Credencial conferida no Detran</span>
+        <span>Antecedentes criminais negativos</span>
+        <span>Localização ao vivo na aula</span>
+        <span>Avaliação e denúncia</span>
+      </div>
+    </div>
+
+    <div class="rodape-equipe">
+      <h4>Quem fez</h4>
+      <p class="rodape-curso">Projeto da disciplina de Empreendedorismo &middot; Bacharelado em Sistemas de Informação &middot; Faculdade de Tecnologia da Unicamp &middot; 2026</p>
+      <ul class="equipe-lista">
+        <li><b>Giovana Ruiz de Souza</b><span>RA 281417</span></li>
+        <li><b>João Victor Targino Yokoyama</b><span>RA 185496</span></li>
+        <li><b>Augusto Toledo Caires de Oliveira</b><span>RA 199793</span></li>
+        <li><b>Yasmin Inoue Martins Ponciano</b><span>RA 281460</span></li>
+        <li><b>Italo Carvalhaes Camargo Venerando</b><span>RA 281426</span></li>
+        <li><b>Davi Paiva Souza</b><span>RA 222481</span></li>
+        <li><b>Luiz Otávio Xavier dos Santos</b><span>RA 281435</span></li>
+      </ul>
+    </div>
+
+    <div class="rodape-base">
+      <p><b>Projeto acadêmico.</b> A Destrava é um protótipo feito para uma disciplina de graduação. Os instrutores, as avaliações e os preços nesta versão são exemplos, não há contratação real de serviço e nenhum pagamento é processado.</p>
+      <p>&copy; 2026 Destrava &middot; Feito em Limeira e Campinas, São Paulo</p>
+    </div>
+
+  </div>
+</footer>
 
 <!-- ============ ABAS (celular) ============ -->
 <nav class="tabbar" id="tabbar">
