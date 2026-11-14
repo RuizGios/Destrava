@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Destrava</title>
-<meta name="description" content="Aulas de direcao avulsas e monitoradas para quem ja tem CNH.">
+<meta name="description" content="Aulas de direção avulsas e monitoradas, com instrutor verificado e aula acompanhada por GPS.">
 <meta name="theme-color" content="#0E1A17">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.json?v=3">
@@ -214,7 +214,7 @@
             <span class="switch-box"></span>
             <span class="switch-text">
               <b>Gravar o áudio da aula</b>
-              <small>Opcional. O instrutor também precisa aceitar. Fica criptografado e é apagado em 30 dias.</small>
+              <small>Opcional. Começa quando você inicia a aula e o áudio fica salvo só no seu aparelho. Avise o instrutor antes de começar.</small>
             </span>
           </label>
         </div>
@@ -256,6 +256,16 @@
         <div class="panel">
           <h3 class="h3" id="live-title">Aula</h3>
           <p class="live-meta" id="live-meta"></p>
+          <div class="live-stats">
+            <div class="live-stat"><b id="live-tempo">0:00</b><span>duração</span></div>
+            <div class="live-stat"><b id="live-dist">0,0 km</b><span>percorridos</span></div>
+            <div class="live-stat"><b id="live-prec">--</b><span>precisão do GPS</span></div>
+          </div>
+          <div class="rec-box" id="live-rec-box">
+            <span class="rec-dot"></span>
+            <span class="rec-text"><b id="live-rec-label">Gravação de áudio desligada</b><small id="live-rec-sub">O áudio fica salvo só neste aparelho.</small></span>
+            <button class="btn btn--line btn--sm" id="live-rec" type="button">Gravar</button>
+          </div>
           <div class="live-actions">
             <button class="btn btn--line" id="live-share" type="button">Compartilhar com contato</button>
             <button class="btn btn--danger" id="live-sos" type="button">Botão de emergência</button>
@@ -303,6 +313,12 @@
               <div><div class="field-label">Bairro de referência</div><div class="field"><input class="field-input" id="sg-bairro" type="text" placeholder="Onde você começa as aulas"></div></div>
             </div>
             <div class="row-2">
+              <div><div class="field-label">Como você se identifica</div><div class="field"><select class="field-select" id="sg-genero">
+                <option value="f">Instrutora (mulher)</option><option value="m">Instrutor (homem)</option><option value="">Prefiro não informar</option>
+              </select></div></div>
+              <div></div>
+            </div>
+            <div class="row-2">
               <div><div class="field-label">Anos de experiência</div><div class="field"><input class="field-input" id="sg-anos" type="number" min="0" max="50" placeholder="0"></div></div>
               <div><div class="field-label">Preço da aula com seu carro</div><div class="field"><input class="field-input" id="sg-preco" type="number" min="30" max="300" placeholder="Ex.: 85"></div></div>
             </div>
@@ -320,7 +336,12 @@
             <label class="switch">
               <input type="checkbox" id="sg-so-mulheres">
               <span class="switch-box"></span>
-              <span class="switch-text"><b>Quero atender somente mulheres</b><small>Seu perfil só aparece para alunas.</small></span>
+              <span class="switch-text"><b>Quero atender somente mulheres</b><small>Seu perfil aparece com o selo "Atende só mulheres".</small></span>
+            </label>
+            <label class="switch">
+              <input type="checkbox" id="sg-primeira">
+              <span class="switch-box"></span>
+              <span class="switch-text"><b>Também atendo quem está tirando a primeira habilitação</b><small>Só se o seu carro tiver duplo pedal e você for credenciado para aulas oficiais.</small></span>
             </label>
             <button class="btn btn--block" data-step-next="2" type="button">Continuar para os documentos</button>
           </div>

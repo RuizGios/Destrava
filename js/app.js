@@ -33,6 +33,7 @@ if (!candidaturas) { candidaturas = PENDENTES_EXEMPLO.slice(); Armazem.gravar("c
 let sessao = Armazem.ler("sessao", null);
 let contas  = Armazem.ler("contas", []);
 let usuario = Armazem.ler("usuario", null);
+let avaliacoesLocais = Armazem.ler("avaliacoes", {});   // { idDoInstrutor: [avaliacao, ...] }
 
 /* arquivos enviados ficam so na memoria desta sessao.
    O navegador nao guarda arquivo grande, entao o que vai para o
@@ -58,18 +59,33 @@ const estado = {
 /* ---------- INSTRUTORES (fixos mais os aprovados) ---------- */
 function candidaturaParaInstrutor(c) {
   return {
-    id: c.id, nome: c.nome, iniciais: c.iniciais, genero: c.genero,
+    id: c.id, primeira: !!c.primeira, email: c.email || "",
+    nome: c.nome, iniciais: c.iniciais, genero: c.genero,
     cidade: c.cidade, bairro: c.bairro, nota: 5.0, aulas: 0,
     anos: c.anos, preco: c.preco, cambio: c.cambio, carro: c.carro,
     especialidades: c.especialidades, bio: c.bio,
     soMulheres: c.soMulheres, novo: true, avaliacoes: []
   };
 }
+/* junta as avaliacoes feitas neste aparelho as que ja vem no cadastro,
+   e recalcula a nota media */
+function comAvaliacoesLocais(i) {
+  const extras = avaliacoesLocais[i.id] || [];
+  if (!extras.length) return i;
+  const todas = extras.concat(i.avaliacoes || []);
+  const somaBase = i.novo ? 0 : i.nota * i.aulas;
+  const qtdBase = i.novo ? 0 : i.aulas;
+  const nota = (somaBase + extras.reduce((t, a) => t + a.nota, 0)) / (qtdBase + extras.length);
+  return Object.assign({}, i, { avaliacoes: todas, nota, aulas: qtdBase + extras.length, novo: false });
+}
 function todosInstrutores() {
   return INSTRUTORES.concat(
     candidaturas.filter(c => c.status === "aprovado").map(candidaturaParaInstrutor)
-  );
+  ).map(comAvaliacoesLocais);
 }
+/* concordancia: instrutora / instrutor */
+const ehMulher = i => !!i && i.genero === "f";
+const oa = (i, masc, fem) => ehMulher(i) ? fem : masc;
 function acharInstrutor(id) { return todosInstrutores().find(i => i.id === id) || null; }
 
 /* ============================================================
@@ -95,6 +111,11 @@ const CONSTRUTORES = {
 };
 
 function mostrar(tela, ctx) {
+  // saiu da aula sem encerrar: para o GPS e salva o que foi gravado
+  if (tela !== "live" && Rastreio.ativo) {
+    pararRastreio();
+    if (Gravador.ativo()) finalizarGravacao();
+  }
   $$(".screen").forEach(s => s.classList.remove("is-active"));
   const alvo = $("#screen-" + tela);
   if (alvo) alvo.classList.add("is-active");
@@ -307,7 +328,7 @@ function montarPerfil(id) {
           <div class="avatar avatar--lg">${escapar(i.iniciais)}</div>
           <div>
             <h1 class="page-title" style="font-size:28px;margin:0;">${escapar(i.nome)}</h1>
-            <div class="card-sub">Instrutor credenciado &middot; ${escapar(i.bairro)}, ${escapar(i.cidade)}</div>
+            <div class="card-sub">${oa(i, "Instrutor credenciado", "Instrutora credenciada")} &middot; ${escapar(i.bairro)}, ${escapar(i.cidade)}</div>
             <div class="card-rate">${i.novo
               ? "<b>Novo na plataforma</b>"
               : `<b>&#9733; ${nota1(i.nota)}</b> &middot; ${i.aulas} aulas`} &middot; ${i.anos} anos de experiência</div>
@@ -331,7 +352,7 @@ function montarPerfil(id) {
         <div class="section-label">Avaliações</div>
         ${i.avaliacoes.length
           ? i.avaliacoes.map(a => `<div class="quote">${escapar(a.texto)}<cite>${escapar(a.autor)} &middot; &#9733; ${nota1(a.nota)}</cite></div>`).join("")
-          : '<p class="note">Ainda não recebeu avaliações. Acabou de ser aprovado pela nossa equipe de verificação.</p>'}
+          : '<p class="note">Ainda não recebeu avaliações. ' + oa(i, "Acabou de ser aprovado", "Acabou de ser aprovada") + ' pela nossa equipe de verificação.</p>'}
       </div>
 
       <aside class="panel panel--sticky">
@@ -358,9 +379,9 @@ function proximasDatas(n) {
   for (let k = 1; k <= n; k++) {
     const d = new Date(); d.setDate(d.getDate() + k);
     lista.push({
-      iso: d.toISOString().slice(0, 10),
+      iso: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`,
       semana: DIAS_SEMANA[d.getDay()],
-      rotulo: d.getDate() + "/" + String(d.getMonth() + 1).padStart(2, "0")
+      rotulo: String(d.getDate()).padStart(2, "0") + "/" + String(d.getMonth() + 1).padStart(2, "0")
     });
   }
   return lista;
@@ -505,7 +526,7 @@ function entrarOuCriar() {
 
   if (existente) {
     usuario = { nome: existente.nome, email: existente.email };
-    aviso("Bem-vindo de volta, " + existente.nome.split(" ")[0] + ".");
+    aviso("Que bom ver você de novo, " + existente.nome.split(" ")[0] + ".");
   } else {
     contas.push({ nome, email, senha });
     Armazem.gravar("contas", contas);
@@ -646,6 +667,8 @@ function validarAgendamento() {
 }
 
 async function confirmarAgendamento() {
+  const botao = $("#booking-confirm");
+  if (botao.disabled) return;
   const problemas = validarAgendamento();
   if (problemas.length) {
     erros("#booking-errors", problemas);
@@ -654,13 +677,15 @@ async function confirmarAgendamento() {
   }
   erros("#booking-errors", []);
 
+  botao.disabled = true;
+  botao.textContent = "Confirmando...";
   const i = estado.instrutor, a = estado.agendamento;
   const valor = precoDe(i, a.carro);
   const aula = {
     id: "a" + Date.now(),
     instrutorId: i.id, instrutorNome: i.nome, iniciais: i.iniciais,
     dificuldade: estado.dificuldade,
-    dataRotulo: a.data.rotulo, semana: a.data.semana, hora: a.hora,
+    dataIso: a.data.iso, dataRotulo: a.data.rotulo, semana: a.data.semana, hora: a.hora,
     carro: a.carro,
     endereco: enderecoCompleto(),
     contatoNome: $("#booking-contato-nome").value.trim(),
@@ -676,7 +701,13 @@ async function confirmarAgendamento() {
   aulas.unshift(aula);
   Armazem.gravar("aulas", aulas);
 
-  const envio = await enviarEmails(aula, usuario, i);
+  // o e-mail nunca pode impedir a aula de ser marcada
+  let envio = { enviado: false };
+  try {
+    if (typeof enviarEmails === "function") envio = await enviarEmails(aula, usuario, i);
+  } catch (e) { console.warn("Falha no envio de e-mail", e); }
+  botao.disabled = false;
+  botao.textContent = "Confirmar agendamento";
 
   $("#done-content").innerHTML = `
     <div class="big-check">&#10003;</div>
@@ -684,7 +715,7 @@ async function confirmarAgendamento() {
     <p class="done-text">
       ${escapar(aula.instrutorNome)} encontra você em<br><b>${escapar(aula.endereco)}</b><br>
       ${escapar(aula.semana)} ${escapar(aula.dataRotulo)} às ${escapar(aula.hora)}.<br><br>
-      Avisamos ${escapar(aula.contatoNome.split(" ")[0])} assim que a aula começar.<br><br>
+      Quando a aula começar, você pode enviar sua localização para ${escapar(aula.contatoNome.split(" ")[0])} com um toque.<br><br>
       ${envio.enviado
         ? "Enviamos a confirmação para <b>" + escapar(usuario.email) + "</b> e avisamos o instrutor."
         : "A confirmação apareceu na tela porque o envio de e-mail ainda não foi ligado."}
@@ -718,19 +749,23 @@ function desenharAulas() {
             <div class="card-name">${escapar(a.instrutorNome)}</div>
             <div class="card-sub">${escapar(a.semana)} ${escapar(a.dataRotulo)} às ${escapar(a.hora)} &middot; ${dinheiro(a.total)}</div>
             <div class="card-sub">${escapar(a.endereco || "")}</div>
+            ${fim && a.trajeto ? `<div class="card-sub">Trajeto: ${String(a.trajeto.km).replace(".", ",")} km${a.trajeto.modo === "demo" ? " (demonstração)" : ""}</div>` : ""}
           </div>
           <span class="badge ${fim ? "badge--done" : ""}">${fim ? "Concluída" : "Agendada"}</span>
         </div>
         <div class="lesson-actions">
           ${fim
             ? (a.nota
-                ? `<span class="card-rate"><b>&#9733; ${a.nota},0</b> avaliada por você</span>`
+                ? `<span class="card-rate"><b>&#9733; ${a.nota},0</b> &middot; aula avaliada por você</span>`
                 : `<button class="btn btn--line btn--sm" data-acao="avaliar" data-aula="${a.id}" type="button">Avaliar aula</button>`)
             : `<button class="btn btn--sm" data-acao="iniciar" data-aula="${a.id}" type="button">Iniciar aula</button>
                <button class="btn btn--line btn--sm" data-acao="cancelar" data-aula="${a.id}" type="button">Cancelar</button>`}
         </div>
+        <div data-audios="${a.id}"></div>
       </div>`;
   }).join("");
+
+  aulas.forEach(a => anexarAudios($(`[data-audios="${a.id}"]`, alvo), a));
 
   $$("[data-acao]", alvo).forEach(b => b.addEventListener("click", () => {
     const aula = aulas.find(x => x.id === b.dataset.aula);
@@ -738,6 +773,7 @@ function desenharAulas() {
     if (b.dataset.acao === "iniciar") iniciarAula(aula);
     if (b.dataset.acao === "avaliar") irPara("rate", aula.id);
     if (b.dataset.acao === "cancelar") {
+      if (!confirm("Cancelar a aula com " + aula.instrutorNome + " em " + aula.dataRotulo + "?")) return;
       aulas = aulas.filter(x => x.id !== aula.id);
       Armazem.gravar("aulas", aulas);
       desenharAulas();
@@ -751,8 +787,30 @@ function desenharAulas() {
    O mapa tem duas versoes. Com internet usa o Leaflet, com mapa de
    rua de verdade. Sem internet desenha um mapa simples, para a
    demonstracao nunca quebrar.
+
+   O rastreio tem dois modos que nunca se misturam:
+   - "real": pontos vindos do GPS do aparelho
+   - "demo": trajeto de exemplo em Limeira, usado quando o GPS
+     nao e liberado ou nao responde. Se o GPS responder depois,
+     o trajeto de exemplo e apagado e o real assume.
    ============================================================ */
-let relogio = null, vigiaGps = null, passoDemo = 0, pontos = [];
+const RAIO_AULA_KM = 15;          // acima disso o app avisa que a aula saiu da regiao
+const PRECISAO_MAXIMA_M = 80;     // leituras piores que isso sao ignoradas
+const ESPERA_GPS_MS = 15000;      // tempo maximo esperando o primeiro sinal
+
+let relogio = null, pontos = [];
+const Rastreio = {
+  modo: null, vigia: null, demoTimer: null, esperaTimer: null,
+  passoDemo: 0, distanciaKm: 0, origem: null, alertouRegiao: false, ativo: false
+};
+
+/* distancia em km entre dois pontos [lat, lng] */
+function distanciaKm(a, b) {
+  const rad = x => x * Math.PI / 180;
+  const dLat = rad(b[0] - a[0]), dLng = rad(b[1] - a[1]);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a[0])) * Math.cos(rad(b[0])) * Math.sin(dLng / 2) ** 2;
+  return 6371 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+}
 
 const MapaReal = {
   mapa: null, marcador: null, traco: null,
@@ -771,9 +829,11 @@ const MapaReal = {
       this.mapa = L.map("map", { zoomControl: false, attributionControl: false });
       L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(this.mapa);
       this.traco = L.polyline([], { color: "#0E1A17", weight: 6, opacity: .95 }).addTo(this.mapa);
-      this.marcador = L.circleMarker([0, 0], { radius: 10, color: "#0E1A17", weight: 4, fillColor: "#CBFF4D", fillOpacity: 1 }).addTo(this.mapa);
+      this.marcador = L.circleMarker(coord, { radius: 10, color: "#0E1A17", weight: 4, fillColor: "#CBFF4D", fillOpacity: 1 }).addTo(this.mapa);
     }
-    setTimeout(() => this.mapa.invalidateSize(), 140);
+    // o mapa nasce dentro de uma tela escondida, entao o tamanho
+    // precisa ser recalculado depois que a tela aparece
+    setTimeout(() => { this.mapa.invalidateSize(); this.mapa.setView(coord, 16); }, 160);
     this.traco.setLatLngs([]);
     this.mapa.setView(coord, 16);
     this.marcador.setLatLng(coord);
@@ -787,7 +847,6 @@ const MapaReal = {
 };
 
 const MapaSimples = {
-  limites: null,
   reiniciar() {
     $("#map").innerHTML = `
       <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block;background:#E6EAE6">
@@ -801,23 +860,23 @@ const MapaSimples = {
         <polyline id="mini-traco" fill="none" stroke="#0E1A17" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" points=""/>
         <circle id="mini-ponto" r="9" fill="#CBFF4D" stroke="#0E1A17" stroke-width="4" cx="-50" cy="-50"/>
       </svg>`;
-    const lats = ROTA_DEMO.map(p => p[0]), lngs = ROTA_DEMO.map(p => p[1]);
-    this.limites = {
-      latMin: Math.min(...lats), latMax: Math.max(...lats),
-      lngMin: Math.min(...lngs), lngMax: Math.max(...lngs)
-    };
   },
-  projetar(c) {
-    const l = this.limites;
-    return [
-      40 + ((c[1] - l.lngMin) / ((l.lngMax - l.lngMin) || 1)) * 320,
-      260 - ((c[0] - l.latMin) / ((l.latMax - l.latMin) || 1)) * 220
-    ];
-  },
+  /* os limites saem dos proprios pontos, entao funciona tanto com o
+     trajeto de exemplo quanto com o GPS real em qualquer cidade */
   desenhar(lista) {
-    const pares = lista.map(c => this.projetar(c));
     const linha = $("#mini-traco"), ponto = $("#mini-ponto");
-    if (!linha || !ponto) return;
+    if (!linha || !ponto || !lista.length) return;
+    const lats = lista.map(p => p[0]), lngs = lista.map(p => p[1]);
+    const minSpan = 0.002;
+    let latMin = Math.min(...lats), latMax = Math.max(...lats);
+    let lngMin = Math.min(...lngs), lngMax = Math.max(...lngs);
+    if (latMax - latMin < minSpan) { const m = (latMax + latMin) / 2; latMin = m - minSpan / 2; latMax = m + minSpan / 2; }
+    if (lngMax - lngMin < minSpan) { const m = (lngMax + lngMin) / 2; lngMin = m - minSpan / 2; lngMax = m + minSpan / 2; }
+    const proj = c => [
+      40 + ((c[1] - lngMin) / (lngMax - lngMin)) * 320,
+      260 - ((c[0] - latMin) / (latMax - latMin)) * 220
+    ];
+    const pares = lista.map(proj);
     linha.setAttribute("points", pares.map(p => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" "));
     const u = pares[pares.length - 1];
     ponto.setAttribute("cx", u[0].toFixed(1));
@@ -827,84 +886,352 @@ const MapaSimples = {
 
 let Mapa = null;
 
+function rotuloGps(texto, classe) {
+  $("#live-gps-label").textContent = texto;
+  const tag = $(".live-tag");
+  tag.classList.remove("is-demo", "is-off");
+  if (classe) tag.classList.add(classe);
+}
+
+function atualizarPainel() {
+  $("#live-dist").textContent = Rastreio.distanciaKm.toFixed(1).replace(".", ",") + " km";
+}
+
+function horaAgora() {
+  const d = new Date();
+  return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+}
+
 function iniciarAula(aula) {
   estado.aulaAtiva = aula;
   irPara("live");
 
   $("#live-title").textContent = "Aula com " + aula.instrutorNome;
-  $("#live-note").textContent = "O trajeto fica registrado. Se a aula sair muito da região combinada, o app avisa você e seu contato de confiança.";
-  pontos = []; passoDemo = 0;
-  const inicio = Date.now();
+  $("#live-note").textContent = `O trajeto fica registrado. Se a aula sair mais de ${RAIO_AULA_KM} km do ponto de partida, o app avisa você.`;
+  pontos = [];
+  Object.assign(Rastreio, { modo: null, passoDemo: 0, distanciaKm: 0, origem: null, alertouRegiao: false, ativo: true });
+  $("#live-prec").textContent = "--";
+  atualizarPainel();
 
   Mapa = MapaReal.disponivel() ? MapaReal : MapaSimples;
   Mapa.reiniciar(ROTA_DEMO[0]);
 
+  const inicio = Date.now();
+  const comecou = horaAgora();
   const carro = aula.carro === "aluno" ? "no seu carro" : "no carro do instrutor";
   clearInterval(relogio);
-  $("#live-meta").textContent = `Iniciada às ${aula.hora} · 0 min decorridos · ${carro}`;
-  relogio = setInterval(() => {
-    const min = Math.floor((Date.now() - inicio) / 60000);
-    $("#live-meta").textContent = `Iniciada às ${aula.hora} · ${min} min decorridos · ${carro}`;
-  }, 1000);
+  const tic = () => {
+    const s = Math.floor((Date.now() - inicio) / 1000);
+    $("#live-tempo").textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+  };
+  $("#live-meta").textContent = `Agendada para ${aula.hora}, começou às ${comecou} · ${carro}`;
+  tic();
+  relogio = setInterval(tic, 1000);
 
-  if (navigator.geolocation) {
-    vigiaGps = navigator.geolocation.watchPosition(
-      p => { $("#live-gps-label").textContent = "Localização ao vivo"; moverPara([p.coords.latitude, p.coords.longitude]); },
-      () => { $("#live-gps-label").textContent = "Modo demonstração"; simularTrajeto(); },
-      { enableHighAccuracy: true, maximumAge: 5000, timeout: 8000 }
-    );
-  } else {
-    $("#live-gps-label").textContent = "Modo demonstração";
-    simularTrajeto();
+  desenharGravacaoAoVivo();
+  if (aula.gravar) alternarGravacao();
+
+  if (!navigator.geolocation || !window.isSecureContext) {
+    modoDemonstracao("Este navegador não libera o GPS fora de um endereço https.");
+    return;
+  }
+
+  rotuloGps("Procurando sinal do GPS...", "is-demo");
+  Rastreio.vigia = navigator.geolocation.watchPosition(
+    recebeuPosicao, erroGps,
+    { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 }
+  );
+  clearTimeout(Rastreio.esperaTimer);
+  Rastreio.esperaTimer = setTimeout(() => {
+    if (Rastreio.modo !== "real") modoDemonstracao("O GPS não respondeu. Se ele voltar, o trajeto real substitui o de exemplo.");
+  }, ESPERA_GPS_MS);
+}
+
+function recebeuPosicao(p) {
+  if (!Rastreio.ativo) return;
+  const coord = [p.coords.latitude, p.coords.longitude];
+  const prec = Math.round(p.coords.accuracy || 0);
+  $("#live-prec").textContent = prec ? "±" + prec + " m" : "--";
+
+  // primeira leitura real: sai do modo demonstracao e recomeca o trajeto
+  if (Rastreio.modo !== "real") {
+    clearInterval(Rastreio.demoTimer);
+    clearTimeout(Rastreio.esperaTimer);
+    Rastreio.modo = "real";
+    pontos = [];
+    Rastreio.distanciaKm = 0;
+    Rastreio.origem = coord;
+    Mapa.reiniciar(coord);
+    rotuloGps("Localização ao vivo");
+    $("#live-note").textContent = `O trajeto fica registrado. Se a aula sair mais de ${RAIO_AULA_KM} km do ponto de partida, o app avisa você.`;
+    adicionarPonto(coord);
+    return;
+  }
+
+  rotuloGps("Localização ao vivo");
+  if (prec > PRECISAO_MAXIMA_M) return;            // leitura ruim, nao entra no trajeto
+  const ultimo = pontos[pontos.length - 1];
+  const passoKm = distanciaKm(ultimo, coord);
+  if (passoKm * 1000 < Math.max(5, prec / 2)) return;   // parado: evita tracinhos de ruido
+  Rastreio.distanciaKm += passoKm;
+  adicionarPonto(coord);
+}
+
+function adicionarPonto(coord) {
+  pontos.push(coord);
+  Mapa.desenhar(pontos);
+  atualizarPainel();
+  if (Rastreio.origem && !Rastreio.alertouRegiao && distanciaKm(Rastreio.origem, coord) > RAIO_AULA_KM) {
+    Rastreio.alertouRegiao = true;
+    $("#live-note").innerHTML = `<b>A aula saiu da região combinada.</b> Vocês estão a mais de ${RAIO_AULA_KM} km do ponto de partida. Se algo estiver errado, use o botão de emergência.`;
+    aviso("A aula saiu da região combinada.");
   }
 }
 
-function moverPara(c) { pontos.push(c); Mapa.desenhar(pontos); }
+function erroGps(e) {
+  if (!Rastreio.ativo) return;
+  if (e && e.code === 1) {            // a pessoa nao liberou a localizacao
+    navigator.geolocation.clearWatch(Rastreio.vigia);
+    Rastreio.vigia = null;
+    modoDemonstracao("Você não liberou a localização. Libere nas configurações do navegador para usar o GPS real.");
+    return;
+  }
+  // sinal fraco ou demora: se ja tem trajeto real, so avisa e continua esperando
+  if (Rastreio.modo === "real") rotuloGps("Sinal do GPS fraco", "is-demo");
+}
 
-function simularTrajeto() {
-  clearInterval(simularTrajeto._t);
-  moverPara(ROTA_DEMO[passoDemo++]);
-  simularTrajeto._t = setInterval(() => {
-    if (passoDemo >= ROTA_DEMO.length) { clearInterval(simularTrajeto._t); return; }
-    moverPara(ROTA_DEMO[passoDemo++]);
-  }, 2200);
+function modoDemonstracao(motivo) {
+  if (!Rastreio.ativo || Rastreio.modo === "demo" || Rastreio.modo === "real") return;
+  Rastreio.modo = "demo";
+  Rastreio.origem = ROTA_DEMO[0];
+  rotuloGps("Modo demonstração", "is-demo");
+  $("#live-note").textContent = motivo + " O mapa mostra um trajeto de exemplo.";
+  const passo = () => {
+    if (Rastreio.passoDemo >= ROTA_DEMO.length) { clearInterval(Rastreio.demoTimer); return; }
+    const c = ROTA_DEMO[Rastreio.passoDemo++];
+    if (pontos.length) Rastreio.distanciaKm += distanciaKm(pontos[pontos.length - 1], c);
+    adicionarPonto(c);
+  };
+  clearInterval(Rastreio.demoTimer);
+  passo();
+  Rastreio.demoTimer = setInterval(passo, 2200);
 }
 
 function pararRastreio() {
-  if (vigiaGps !== null && navigator.geolocation) navigator.geolocation.clearWatch(vigiaGps);
-  vigiaGps = null;
+  if (Rastreio.vigia !== null && navigator.geolocation) navigator.geolocation.clearWatch(Rastreio.vigia);
+  Rastreio.vigia = null;
+  Rastreio.ativo = false;
   clearInterval(relogio);
-  clearInterval(simularTrajeto._t);
+  clearInterval(Rastreio.demoTimer);
+  clearTimeout(Rastreio.esperaTimer);
 }
 
-function posicaoAtualTexto() {
-  const p = pontos.length ? pontos[pontos.length - 1] : ROTA_DEMO[0];
+function linkLocalizacao() {
+  if (!pontos.length) return null;
+  const p = pontos[pontos.length - 1];
   return `https://www.google.com/maps?q=${p[0].toFixed(5)},${p[1].toFixed(5)}`;
 }
 
+/* abre o WhatsApp ja com o numero do contato de confianca e a mensagem */
+function linkWhatsApp(tel, texto) {
+  let d = soDigitos(tel);
+  if (d.length === 10 || d.length === 11) d = "55" + d;
+  return `https://wa.me/${d}?text=${encodeURIComponent(texto)}`;
+}
+
+function textoLocalizacao() {
+  const link = linkLocalizacao();
+  if (!link) return "minha localização ainda está sendo carregada";
+  return link + (Rastreio.modo === "demo" ? " (trajeto de demonstração)" : "");
+}
+
+/* ============================================================
+   GRAVACAO DE AUDIO
+   Usa o microfone do aparelho (MediaRecorder). O audio fica salvo
+   so neste navegador, no IndexedDB. Nada vai para servidor.
+   ============================================================ */
+const Gravacoes = {
+  abrir() {
+    return new Promise((ok, falha) => {
+      if (!window.indexedDB) return falha(new Error("sem IndexedDB"));
+      const r = indexedDB.open("destrava", 1);
+      r.onupgradeneeded = () => r.result.createObjectStore("gravacoes");
+      r.onsuccess = () => ok(r.result);
+      r.onerror = () => falha(r.error);
+    });
+  },
+  async operar(modo, fn) {
+    const db = await this.abrir();
+    return new Promise((ok, falha) => {
+      const t = db.transaction("gravacoes", modo);
+      const req = fn(t.objectStore("gravacoes"));
+      t.oncomplete = () => ok(req && req.result);
+      t.onerror = () => falha(t.error);
+    });
+  },
+  salvar(chave, blob) { return this.operar("readwrite", s => s.put(blob, chave)); },
+  ler(chave) { return this.operar("readonly", s => s.get(chave)); }
+};
+const gravacoesNaMemoria = {};   // reserva, se o IndexedDB estiver bloqueado
+
+const Gravador = {
+  rec: null, stream: null, partes: [], inicio: 0, tipo: "",
+  suportado() {
+    return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder && window.isSecureContext);
+  },
+  ativo() { return !!(this.rec && this.rec.state !== "inactive"); },
+  async comecar() {
+    this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const tipos = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg;codecs=opus"];
+    this.tipo = tipos.find(t => MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) || "";
+    this.rec = this.tipo ? new MediaRecorder(this.stream, { mimeType: this.tipo }) : new MediaRecorder(this.stream);
+    this.partes = [];
+    this.rec.ondataavailable = e => { if (e.data && e.data.size) this.partes.push(e.data); };
+    this.rec.start(1000);
+    this.inicio = Date.now();
+  },
+  parar() {
+    return new Promise(ok => {
+      const rec = this.rec;
+      if (!rec || rec.state === "inactive") { this.liberar(); return ok(null); }
+      rec.onstop = () => {
+        const blob = new Blob(this.partes, { type: rec.mimeType || this.tipo || "audio/webm" });
+        const segundos = Math.max(1, Math.round((Date.now() - this.inicio) / 1000));
+        this.liberar();
+        ok(blob.size ? { blob, segundos } : null);
+      };
+      rec.stop();
+    });
+  },
+  liberar() {
+    if (this.stream) this.stream.getTracks().forEach(t => t.stop());
+    this.stream = null;
+    this.rec = null;
+  }
+};
+
+let tempoGravacao = null;
+
+function desenharGravacaoAoVivo() {
+  const caixa = $("#live-rec-box"), botao = $("#live-rec");
+  clearInterval(tempoGravacao);
+  if (!Gravador.suportado()) {
+    caixa.classList.remove("is-rec");
+    $("#live-rec-label").textContent = "Gravação indisponível neste navegador";
+    $("#live-rec-sub").textContent = "Use Chrome, Edge, Firefox ou Safari atualizados, pelo link https do app.";
+    botao.disabled = true;
+    return;
+  }
+  botao.disabled = false;
+  if (Gravador.ativo()) {
+    caixa.classList.add("is-rec");
+    botao.textContent = "Parar";
+    const tic = () => {
+      const s = Math.floor((Date.now() - Gravador.inicio) / 1000);
+      $("#live-rec-label").textContent = "Gravando áudio · " + Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+    };
+    tic();
+    tempoGravacao = setInterval(tic, 1000);
+    $("#live-rec-sub").textContent = "O áudio fica salvo só neste aparelho.";
+  } else {
+    caixa.classList.remove("is-rec");
+    botao.textContent = "Gravar";
+    const n = (estado.aulaAtiva && estado.aulaAtiva.gravacoes || []).length;
+    $("#live-rec-label").textContent = n ? `${n} ${n === 1 ? "gravação salva" : "gravações salvas"}` : "Gravação de áudio desligada";
+    $("#live-rec-sub").textContent = "Opcional. Avise o instrutor antes de gravar.";
+  }
+}
+
+async function alternarGravacao() {
+  if (Gravador.ativo()) { await finalizarGravacao(); return; }
+  try {
+    await Gravador.comecar();
+    aviso("Gravação iniciada.");
+  } catch (e) {
+    Gravador.liberar();
+    aviso(e && e.name === "NotAllowedError"
+      ? "Você não liberou o microfone. Libere nas configurações do navegador."
+      : "Não foi possível acessar o microfone.");
+  }
+  desenharGravacaoAoVivo();
+}
+
+async function finalizarGravacao() {
+  const aula = estado.aulaAtiva;
+  const resultado = await Gravador.parar();
+  clearInterval(tempoGravacao);
+  if (resultado && aula) {
+    const chave = aula.id + "-" + Date.now();
+    try { await Gravacoes.salvar(chave, resultado.blob); }
+    catch (e) { gravacoesNaMemoria[chave] = resultado.blob; }
+    aula.gravacoes = (aula.gravacoes || []).concat([{ chave, segundos: resultado.segundos, tipo: resultado.blob.type }]);
+    Armazem.gravar("aulas", aulas);
+    aviso("Gravação salva neste aparelho.");
+  }
+  desenharGravacaoAoVivo();
+}
+
+/* coloca um player para cada gravacao da aula dentro do alvo */
+async function anexarAudios(alvo, aula) {
+  if (!alvo || !aula.gravacoes || !aula.gravacoes.length) return;
+  for (const [k, g] of aula.gravacoes.entries()) {
+    let blob = gravacoesNaMemoria[g.chave];
+    if (!blob) { try { blob = await Gravacoes.ler(g.chave); } catch (e) { blob = null; } }
+    const bloco = document.createElement("div");
+    bloco.className = "note";
+    const dur = Math.floor(g.segundos / 60) + ":" + String(g.segundos % 60).padStart(2, "0");
+    if (!blob) {
+      bloco.textContent = `Gravação ${k + 1} (${dur}) não está mais neste aparelho.`;
+      alvo.appendChild(bloco);
+      continue;
+    }
+    const url = URL.createObjectURL(blob);
+    const ext = /mp4/.test(g.tipo) ? "m4a" : /ogg/.test(g.tipo) ? "ogg" : "webm";
+    bloco.innerHTML = `<b>Gravação ${k + 1}</b> · ${dur} · <a href="${url}" download="destrava-aula-${escapar(aula.id)}-${k + 1}.${ext}">baixar</a>`;
+    const player = document.createElement("audio");
+    player.controls = true; player.src = url; player.className = "audio-play";
+    bloco.appendChild(player);
+    alvo.appendChild(bloco);
+  }
+}
+
 function montarAulaAoVivo() {
+  $("#live-rec").addEventListener("click", alternarGravacao);
+
   $("#live-share").addEventListener("click", async () => {
     const a = estado.aulaAtiva;
-    const txt = `Estou em aula de direção com ${a.instrutorNome}. Acompanhe por aqui: ${posicaoAtualTexto()}`;
-    if (navigator.share) { try { await navigator.share({ title: "Destrava", text: txt }); return; } catch (e) {} }
-    try { await navigator.clipboard.writeText(txt); aviso("Link copiado. Envie para " + (a.contatoNome || "seu contato") + "."); }
-    catch (e) { aviso("Localização: " + posicaoAtualTexto()); }
+    if (!a) return;
+    const txt = `Estou em aula de direção com ${a.instrutorNome}, pelo Destrava. Minha localização: ${textoLocalizacao()}`;
+    if (navigator.share) { try { await navigator.share({ title: "Destrava", text: txt }); return; } catch (e) { if (e && e.name === "AbortError") return; } }
+    if (a.contatoTel) { window.open(linkWhatsApp(a.contatoTel, txt), "_blank"); return; }
+    try { await navigator.clipboard.writeText(txt); aviso("Mensagem copiada. Cole no WhatsApp de " + (a.contatoNome || "seu contato") + "."); }
+    catch (e) { aviso(txt); }
   });
 
   $("#live-sos").addEventListener("click", () => {
     const a = estado.aulaAtiva;
-    const txt = `EMERGÊNCIA. Estou em aula com ${a.instrutorNome}. Minha localização: ${posicaoAtualTexto()}`;
-    if (navigator.share) navigator.share({ title: "Emergência Destrava", text: txt }).catch(() => {});
-    else if (navigator.clipboard) navigator.clipboard.writeText(txt).catch(() => {});
-    $("#live-note").innerHTML = "<b>Alerta enviado.</b> Seu contato de confiança e nossa equipe receberam sua localização. Mantenha o aplicativo aberto.";
-    aviso("Alerta de emergência disparado.");
+    if (!a) return;
+    const txt = `EMERGÊNCIA. Estou em aula de direção com ${a.instrutorNome} e preciso de ajuda. Minha localização: ${textoLocalizacao()}`;
+    if (a.contatoTel) window.open(linkWhatsApp(a.contatoTel, txt), "_blank");
+    else if (navigator.share) navigator.share({ title: "Emergência Destrava", text: txt }).catch(() => {});
+    if (navigator.clipboard) navigator.clipboard.writeText(txt).catch(() => {});
+    a.emergencia = { hora: horaAgora(), local: linkLocalizacao() };
+    Armazem.gravar("aulas", aulas);
+    $("#live-note").innerHTML = `<b>Alerta pronto.</b> Abrimos o WhatsApp de ${escapar(a.contatoNome || "seu contato")} com a mensagem e a sua localização, é só tocar em enviar. A mensagem também foi copiada. Em perigo, <a href="tel:190"><b>ligue 190</b></a>.`;
+    aviso("Alerta de emergência preparado.");
   });
 
-  $("#live-finish").addEventListener("click", () => {
-    pararRastreio();
+  $("#live-finish").addEventListener("click", async () => {
     const a = estado.aulaAtiva;
+    if (!a) return;
+    const botao = $("#live-finish");
+    botao.disabled = true;
+    pararRastreio();
+    if (Gravador.ativo()) await finalizarGravacao();
     a.status = "concluida";
+    a.trajeto = { km: Number(Rastreio.distanciaKm.toFixed(2)), modo: Rastreio.modo || "sem sinal", pontos: pontos.length };
     Armazem.gravar("aulas", aulas);
+    botao.disabled = false;
     irPara("rate", a.id);
   });
 }
@@ -912,7 +1239,7 @@ function montarAulaAoVivo() {
 /* ============================================================
    TELA 7 - AVALIACAO
    ============================================================ */
-const PONTOS_POSITIVOS = ["Me deixou calmo", "Explicou bem", "Pontual", "Carro em ordem", "Teve paciência", "Respeitou meu ritmo"];
+const PONTOS_POSITIVOS = ["Me deixou à vontade", "Explicou bem", "Pontual", "Carro em ordem", "Teve paciência", "Respeitou meu ritmo"];
 
 function montarAvaliacao(aulaId) {
   const aula = aulas.find(a => a.id === aulaId);
@@ -928,6 +1255,7 @@ function montarAvaliacao(aulaId) {
         <div class="card-name" style="font-size:19px">${escapar(aula.instrutorNome)}</div>
         <div class="card-sub">${escapar(aula.semana)} ${escapar(aula.dataRotulo)} &middot; 1 hora</div>
       </div>
+      <div id="rate-audios"></div>
       <div class="stars" id="rate-stars"></div>
       <div style="text-align:center;font-size:13px;color:var(--muted)">Toque para avaliar</div>
 
@@ -940,6 +1268,8 @@ function montarAvaliacao(aulaId) {
       <button class="btn btn--block" id="rate-send" type="button">Enviar avaliação</button>
       <button class="btn btn--text btn--block" id="rate-report" type="button">Denunciar algo que aconteceu na aula</button>
     </div>`;
+
+  anexarAudios($("#rate-audios"), aula);
 
   const areaEstrelas = $("#rate-stars");
   for (let n = 1; n <= 5; n++) {
@@ -970,12 +1300,27 @@ function montarAvaliacao(aulaId) {
     aula.pontos = Array.from(marcados);
     aula.status = "concluida";
     Armazem.gravar("aulas", aulas);
-    aviso("Avaliação enviada. Obrigado.");
+    // a avaliacao passa a aparecer no perfil do instrutor
+    const partes = usuario ? usuario.nome.split(" ").filter(Boolean) : [];
+    const autor = partes.length ? partes[0] + (partes[1] ? " " + partes[1][0] + "." : "") : "Aluno do app";
+    const lista = avaliacoesLocais[aula.instrutorId] || [];
+    lista.unshift({
+      texto: aula.comentario || (aula.pontos.length ? aula.pontos.join(", ") + "." : "Aula avaliada sem comentário."),
+      autor, nota
+    });
+    avaliacoesLocais[aula.instrutorId] = lista;
+    Armazem.gravar("avaliacoes", avaliacoesLocais);
+    aviso("Avaliação enviada. Obrigado!");
     irPara("lessons");
   });
 
-  $("#rate-report").addEventListener("click", () =>
-    aviso("Denúncia registrada. Nossa equipe analisa em até 24 horas e o instrutor pode ser suspenso durante a apuração."));
+  $("#rate-report").addEventListener("click", () => {
+    const relato = prompt("Conte o que aconteceu. Sua denúncia é sigilosa.");
+    if (relato === null) return;
+    aula.denuncia = { texto: relato.trim(), em: new Date().toISOString() };
+    Armazem.gravar("aulas", aulas);
+    aviso("Denúncia registrada. Nossa equipe analisa em até 24 horas e o cadastro pode ser suspenso durante a apuração.");
+  });
 }
 
 /* ============================================================
@@ -1074,6 +1419,8 @@ function dadosCadastro() {
     cambio: $("#sg-cambio").value,
     bio: $("#sg-bio").value.trim(),
     soMulheres: $("#sg-so-mulheres").checked,
+    primeira: $("#sg-primeira").checked,
+    genero: $("#sg-genero").value,
     especialidades: Array.from(estado.cadastro.especialidades)
   };
 }
@@ -1152,6 +1499,7 @@ function desenharRevisao() {
       ${linha("Carro", d.carro + " · " + d.cambio)}
       ${linha("Especialidades", d.especialidades.join(", "))}
       ${d.soMulheres ? linha("Atendimento", "Somente mulheres") : ""}
+      ${d.primeira ? linha("Primeira habilitação", "Atende") : ""}
     </div>
     <div class="section-label">Documentos anexados</div>
     ${docs}`;
@@ -1167,7 +1515,6 @@ function enviarCadastro() {
   const candidatura = Object.assign({}, d, {
     id: "c" + Date.now(),
     iniciais,
-    genero: d.soMulheres ? "f" : "",
     status: "pendente",
     enviadoEm: `${String(hoje.getDate()).padStart(2, "0")}/${String(hoje.getMonth() + 1).padStart(2, "0")}/${hoje.getFullYear()}`,
     docs: Object.values(estado.cadastro.docs)
@@ -1270,7 +1617,7 @@ function desenharFila() {
             <div class="card-sub">${escapar(c.bairro)}, ${escapar(c.cidade)} &middot; ${c.anos} anos</div>
             <div class="card-sub">Credencial ${escapar(c.credencialNum)} &middot; enviado em ${escapar(c.enviadoEm)}</div>
           </div>
-          <span class="badge ${c.status === "aprovado" ? "badge--done" : ""}">${escapar(c.status)}</span>
+          <span class="badge ${c.status === "aprovado" ? "badge--done" : ""}">${escapar(c.status.charAt(0).toUpperCase() + c.status.slice(1))}</span>
         </div>
         <div class="seals">
           <span class="seal ${selo}">${(c.docs || []).length} documento(s)</span>
@@ -1361,7 +1708,7 @@ function montarAnalise(id) {
     c.status = "aprovado";
     c.motivo = $("#rev-motivo").value.trim();
     Armazem.gravar("candidaturas", candidaturas);
-    aviso(c.nome.split(" ")[0] + " foi aprovado e já aparece na busca dos alunos.");
+    aviso(c.nome.split(" ")[0] + (ehMulher(c) ? " foi aprovada" : " foi aprovado") + " e já aparece na busca dos alunos.");
     irPara("queue");
   });
 

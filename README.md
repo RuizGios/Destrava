@@ -18,7 +18,10 @@ Destrava/
 │   └── style.css     todo o visual. As cores ficam no topo, em :root
 └── js/
     ├── data.js       instrutores, cidades, preços, documentos exigidos
-    └── app.js        navegação, busca, agendamento, GPS, cadastro, aprovação
+    ├── email.js      e-mails de confirmação (EmailJS ou prévia na tela)
+    └── app.js        navegação, busca, agendamento, GPS, gravação, cadastro, aprovação
+docs/
+└── Destrava_Planilha_Financeira.xlsx   custos, receitas, ponto de equilíbrio e payback
 ```
 
 Cinco arquivos. Sem instalação, sem npm, sem build.
@@ -155,8 +158,8 @@ Se o professor perguntar sobre LGPD, essa lista é a resposta. A base legal é o
 - **Pagamento.** Na Fase 1 o aluno acerta direto com o instrutor. A comissão entra na Fase 2.
 - **Dados compartilhados entre aparelhos.** Cada navegador guarda os próprios dados. O próximo passo é o Firebase Firestore, que tem plano gratuito.
 - **Arquivos dos documentos.** O app guarda o nome, o tamanho e o tipo. O arquivo em si só existe enquanto a aba estiver aberta.
-- **Gravação de áudio.** A opção aparece e fica registrada na aula, mas ainda não grava.
-- **E-mail de aprovação.** O app mostra na tela, mas não dispara e-mail.
+- **Gravação de áudio fora do aparelho.** A gravação funciona (microfone do celular), mas o arquivo fica salvo só no navegador de quem gravou.
+- **E-mail.** Sem as chaves do EmailJS em `js/email.js`, o app mostra na tela os e-mails que seriam enviados.
 
 Isso não é falha, é escopo. O MVP existe para testar se as pessoas usam o fluxo.
 

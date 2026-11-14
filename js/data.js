@@ -159,7 +159,7 @@ const INSTRUTORES = [
     nota: 4.5, aulas: 88, anos: 6, preco: 78,
     cambio: "Manual", carro: "Polo 2021, duplo pedal",
     especialidades: ["Pegar estrada", "Câmbio manual", "Ladeira"],
-    bio: "Rodovia e serra. Faço o trajeto Campinas e Jundiaí com quem tem medo de subida.",
+    bio: "Rodovia e serra. Faço o trajeto entre Campinas e Jundiaí com quem tem medo de subida.",
     avaliacoes: [
       { texto: "Subimos a serra umas 5 vezes até eu ficar seguro.", autor: "Felipe A.", nota: 4.0 }
     ]
