@@ -7,6 +7,19 @@ No ar em: https://ruizgios.github.io/Destrava/
 
 ---
 
+## Entrega final (pasta `docs/`)
+
+| Arquivo | O que tem |
+| --- | --- |
+| `Destrava_Entrega_Final.pdf` | Relatório completo: resumo, Lean Canvas atualizado, análise financeira, documentação do MVP com prints, pesquisas e roteiro do pitch |
+| `Destrava_Planilha_Financeira.xlsx` | Custos e receitas com fórmulas: investimento inicial, custo por aula, custos fixos, projeção de 36 meses em 3 cenários e sensibilidade |
+| `Destrava_Pesquisas_para_preencher.docx` | Roteiros da entrevista, do Forms, do teste no Figma e do teste do MVP, com as tabelas de resultado para preencher |
+| `prints/` | Prints de todas as telas do app |
+
+**Resumo dos números (cenário base):** MVP custou R$ 0; investimento inicial de R$ 5.674; sobram R$ 8,07 por aula; empata com 689 aulas por mês (26 instrutores); capital necessário de R$ 21,4 mil; lucro todo mês a partir de abr/2028 e retorno do investimento em dez/2028.
+
+---
+
 ## 1. O que é cada arquivo
 
 ```
