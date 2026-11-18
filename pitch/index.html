@@ -529,6 +529,8 @@ const ANOS=[['2027',-14342],['2028',17132],['2029',196284]];
 const stage=document.getElementById('stage');
 function fit(){const s=Math.min(innerWidth/1920,innerHeight/1080);stage.style.transform=`translate(-50%,-50%) scale(${s})`}
 addEventListener('resize',fit);fit();
+try{new ResizeObserver(fit).observe(document.documentElement)}catch(e){}
+if(window.visualViewport)visualViewport.addEventListener('resize',fit);
 
 /* ===== navegacao ===== */
 const slides=[...document.querySelectorAll('.slide')];
