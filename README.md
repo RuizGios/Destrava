@@ -5,6 +5,8 @@ Projeto da disciplina de Empreendedorismo, FT-Unicamp.
 
 No ar em: https://ruizgios.github.io/Destrava/
 
+Apresentação do pitch: https://ruizgios.github.io/Destrava/pitch/ (setas para navegar, N para notas, T para o cronômetro de 5 minutos, F para tela cheia)
+
 ---
 
 ## Entrega final (pasta `docs/`)

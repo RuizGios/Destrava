@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Destrava · Pitch</title>
+<meta name="theme-color" content="#0E1A17">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0E1A17; --ink2:#16302A; --ink3:#1E3D35; --paper:#F6F3EC; --brand:#0B5F4A;
+  --volt:#CBFF4D; --volt2:#B4E83C; --coral:#FF5436; --muted:#8FA29B; --line:#2A413A;
+  --display:"Space Grotesk",system-ui,sans-serif; --text:"Inter",system-ui,sans-serif;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--ink);overflow:hidden}
+body{font-family:var(--text);color:#fff;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+/* ---------- palco 16:9 que escala para qualquer tela ---------- */
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;overflow:hidden;background:var(--ink)}
+.slide{position:absolute;inset:0;padding:112px 150px 100px;visibility:hidden;opacity:0;transition:opacity .5s var(--ease),transform .7s var(--ease);transform:scale(1.02)}
+.slide.on{visibility:visible;opacity:1;transform:none}
+.slide.paper{background:var(--paper);color:var(--ink)}
+.slide.volt{background:var(--volt);color:var(--ink)}
+
+/* elementos que entram em sequencia */
+[data-a]{opacity:0;transition:opacity .8s var(--ease),transform .9s var(--ease),filter .9s var(--ease);transition-delay:calc(var(--d,0) * 1ms + 250ms)}
+[data-a="up"]{transform:translateY(46px)}
+[data-a="left"]{transform:translateX(-70px)}
+[data-a="right"]{transform:translateX(70px)}
+[data-a="zoom"]{transform:scale(.86)}
+[data-a="blur"]{filter:blur(14px);transform:scale(1.04)}
+.slide.in [data-a]{opacity:1;transform:none;filter:none}
+
+/* ---------- transicao: faixa da estrada que varre a tela ---------- */
+#wipe{position:absolute;inset:0;z-index:50;pointer-events:none;transform:translateX(-110%)}
+#wipe .band{position:absolute;inset:0;background:var(--volt)}
+#wipe .band::after{content:"";position:absolute;left:0;right:0;top:50%;height:14px;margin-top:-7px;background:repeating-linear-gradient(90deg,var(--ink) 0 70px,transparent 70px 130px)}
+#wipe .band.b2{background:var(--ink);transform:translateX(-12%);}
+#wipe .band.b2::after{background:repeating-linear-gradient(90deg,var(--volt) 0 70px,transparent 70px 130px)}
+#wipe.go{animation:wipe .95s var(--ease) forwards}
+#wipe.back{animation:wipeback .95s var(--ease) forwards}
+@keyframes wipe{0%{transform:translateX(-110%)}48%{transform:translateX(0)}52%{transform:translateX(0)}100%{transform:translateX(110%)}}
+@keyframes wipeback{0%{transform:translateX(110%)}48%{transform:translateX(0)}52%{transform:translateX(0)}100%{transform:translateX(-110%)}}
+
+/* ---------- moldura fixa ---------- */
+.chrome{position:absolute;z-index:40;pointer-events:none}
+#brand{left:150px;top:54px;display:flex;align-items:center;gap:14px;transition:opacity .4s}
+#brand .word{font-family:var(--display);font-weight:700;font-size:30px;letter-spacing:-1px}
+.mark{display:flex;gap:5px;align-items:center}
+.mark i{display:block;width:16px;height:7px;border-radius:4px;background:var(--volt);animation:dash 1.6s infinite var(--ease)}
+.mark i:nth-child(2){animation-delay:.18s}
+.mark i:nth-child(3){animation-delay:.36s}
+@keyframes dash{0%,100%{opacity:1;transform:translateX(0)}50%{opacity:.35;transform:translateX(5px)}}
+.paper-mode #brand .word{color:var(--ink)}
+.paper-mode .mark i{background:var(--brand)}
+.volt-mode .mark i{background:var(--ink)} .volt-mode #brand .word{color:var(--ink)}
+#count{right:150px;top:58px;font-family:var(--display);font-size:22px;font-weight:600;letter-spacing:1px;opacity:.6}
+.paper-mode #count,.volt-mode #count{color:var(--ink)}
+#road{left:0;right:0;bottom:0;height:12px;background:rgba(255,255,255,.06)}
+#road .fill{height:100%;width:0;background:repeating-linear-gradient(90deg,var(--volt) 0 46px,transparent 46px 74px);transition:width .9s var(--ease)}
+.paper-mode #road{background:rgba(14,26,23,.07)} .paper-mode #road .fill{background:repeating-linear-gradient(90deg,var(--brand) 0 46px,transparent 46px 74px)}
+.volt-mode #road .fill{background:repeating-linear-gradient(90deg,var(--ink) 0 46px,transparent 46px 74px)}
+#timer{right:150px;bottom:40px;font-family:var(--display);font-size:22px;font-weight:600;opacity:0;transition:opacity .3s;background:rgba(0,0,0,.35);padding:6px 14px;border-radius:30px}
+#timer.show{opacity:1} #timer.late{color:var(--coral)}
+#hint{left:150px;bottom:40px;font-size:17px;opacity:.45;transition:opacity 1s}
+.paper-mode #hint,.volt-mode #hint{color:var(--ink)}
+
+/* ---------- tipografia ---------- */
+.eyebrow{font-family:var(--display);font-size:24px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:var(--volt);margin-bottom:20px}
+.paper .eyebrow{color:var(--brand)} .volt .eyebrow{color:var(--ink);opacity:.7}
+h1,h2,h3{font-family:var(--display);letter-spacing:-2px;line-height:1}
+h2{font-size:80px;font-weight:700;max-width:1560px}
+h2 em{font-style:normal;color:var(--volt)} .paper h2 em{color:var(--brand)} .volt h2 em{color:var(--ink);text-decoration:underline;text-decoration-thickness:8px;text-underline-offset:10px}
+.lede{font-size:34px;line-height:1.4;color:#B9C7C2;max-width:1200px;margin-top:30px}
+.paper .lede{color:#4b5a55}
+.small{font-size:20px;color:var(--muted)} .paper .small{color:#6B7A75}
+.num{font-family:var(--display);font-weight:700;letter-spacing:-2px}
+
+/* ---------- 1. capa ---------- */
+#s1{display:flex;flex-direction:column;justify-content:center;padding-top:60px}
+#s1 .road3d{position:absolute;right:-170px;bottom:0;width:640px;height:1250px;transform:perspective(900px) rotateX(62deg);transform-origin:bottom;background:linear-gradient(90deg,transparent 0 6%,#1A332C 6% 94%,transparent 94%);opacity:.75;pointer-events:none}
+#s1 .road3d::before{content:"";position:absolute;left:50%;width:26px;margin-left:-13px;top:0;bottom:0;background:repeating-linear-gradient(180deg,var(--volt) 0 120px,transparent 120px 240px);animation:drive 1.1s linear infinite}
+#s1 .road3d::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,var(--ink) 0%,rgba(14,26,23,.4) 35%,transparent 70%)}
+@keyframes drive{from{background-position:0 0}to{background-position:0 240px}}
+.biglogo{display:flex;align-items:center;gap:34px;position:relative}
+.biglogo .mark i{width:62px;height:26px;border-radius:14px}
+.biglogo .mark{gap:16px}
+.biglogo .mark i{animation:none;transform:translateX(-140px);opacity:0}
+.slide.in .biglogo .mark i{animation:enter .9s var(--ease) forwards, dash 1.6s 1.6s infinite var(--ease)}
+.slide.in .biglogo .mark i:nth-child(2){animation-delay:.15s,1.75s}
+.slide.in .biglogo .mark i:nth-child(3){animation-delay:.3s,1.9s}
+@keyframes enter{to{transform:none;opacity:1}}
+.biglogo .word{font-family:var(--display);font-weight:700;font-size:200px;letter-spacing:-9px;line-height:.9;display:flex}
+.biglogo .word span{display:inline-block;opacity:0;transform:translateY(60px) rotate(6deg)}
+.slide.in .biglogo .word span{animation:letter .8s var(--ease) forwards;animation-delay:calc(var(--i) * 55ms + 450ms)}
+@keyframes letter{to{opacity:1;transform:none}}
+#s1 .tag{font-family:var(--display);font-size:64px;font-weight:600;letter-spacing:-2px;margin-top:40px;position:relative}
+#s1 .tag em{font-style:normal;color:var(--volt)}
+#s1 .team{position:absolute;left:150px;right:560px;bottom:110px;display:flex;flex-wrap:wrap;gap:10px 30px;font-size:19px;color:#9FB0AA}
+#s1 .team b{color:#fff;font-weight:600}
+
+/* ---------- cartoes ---------- */
+.cards{display:grid;gap:30px;margin-top:70px}
+.card{background:var(--ink2);border:2px solid var(--line);border-radius:34px;padding:40px 40px 44px;position:relative;overflow:hidden}
+.paper .card{background:#fff;border-color:#E3DED2}
+.card .k{font-family:var(--display);font-size:22px;font-weight:700;color:var(--volt);letter-spacing:2px}
+.paper .card .k{color:var(--brand)}
+.card h3{font-size:44px;margin:18px 0 14px;letter-spacing:-1.4px}
+.card p{font-size:25px;line-height:1.45;color:#B9C7C2}
+.paper .card p{color:#4b5a55}
+.quote{font-family:var(--display);font-size:46px;line-height:1.2;letter-spacing:-1.2px;border-left:10px solid var(--volt);padding:8px 0 8px 40px;margin-top:60px;max-width:1500px}
+.quote small{display:block;font-family:var(--text);font-size:22px;color:var(--muted);letter-spacing:0;margin-top:16px}
+
+/* ---------- 3. pesquisa ---------- */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:26px;margin-top:56px}
+.stat{background:#fff;border-radius:30px;padding:34px 34px 30px;border:2px solid #E3DED2}
+.stat .num{font-size:96px;color:var(--ink);display:block;line-height:1}
+.stat.hot{background:var(--ink);color:#fff;border-color:var(--ink)} .stat.hot .num{color:var(--volt)}
+.stat span{font-size:23px;line-height:1.35;display:block;margin-top:14px;color:#4b5a55} .stat.hot span{color:#B9C7C2}
+.hbars{margin-top:44px;display:grid;gap:16px;max-width:1620px}
+.hbar{display:grid;grid-template-columns:520px 1fr 120px;align-items:center;gap:24px;font-size:25px}
+.hbar .track{height:44px;background:#E9E5DA;border-radius:22px;overflow:hidden}
+.hbar .bar{height:100%;width:0;background:var(--brand);border-radius:22px;transition:width 1.4s var(--ease);transition-delay:calc(var(--d) * 1ms + 500ms)}
+.hbar.top .bar{background:var(--ink)}
+.slide.in .hbar .bar{width:var(--w)}
+.hbar b{font-family:var(--display);font-size:34px;text-align:right}
+
+/* ---------- 4. solucao ---------- */
+.sol{display:grid;grid-template-columns:1fr 1fr 1fr;gap:44px;margin-top:40px;align-items:start}
+.step .phone{width:250px;height:470px;border-radius:44px;border:10px solid #000;background:#000;overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,.45);margin-bottom:30px;position:relative}
+.step .phone img{width:100%;display:block}
+.step{display:flex;flex-direction:column}
+.step .n{font-family:var(--display);color:var(--volt);font-size:24px;font-weight:700;letter-spacing:3px}
+.step h3{font-size:42px;margin:10px 0 12px;letter-spacing:-1.2px}
+.step p{font-size:23px;line-height:1.45;color:#B9C7C2;max-width:520px}
+.float{animation:float 5s ease-in-out infinite}
+.step:nth-child(2) .float{animation-delay:-1.6s} .step:nth-child(3) .float{animation-delay:-3.2s}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+
+/* ---------- 5. demo ---------- */
+#s5{display:grid;grid-template-columns:1fr 520px;gap:90px;align-items:center}
+.device{width:420px;height:860px;border-radius:66px;border:14px solid #000;background:#000;box-shadow:0 50px 120px rgba(0,0,0,.6),0 0 0 2px #333;overflow:hidden;position:relative;justify-self:center}
+.device iframe{width:390px;height:833px;border:0;transform:scale(1);transform-origin:0 0;background:#fff}
+.device::before{content:"";position:absolute;top:12px;left:50%;width:130px;height:30px;margin-left:-65px;background:#000;border-radius:20px;z-index:2}
+.qrbox{display:flex;align-items:center;gap:36px;margin-top:34px}
+#qr{background:#fff;padding:14px;border-radius:22px;width:198px;height:198px}
+#qr img,#qr canvas{width:170px!important;height:170px!important}
+.url{font-family:var(--display);font-size:44px;font-weight:700;color:var(--volt);letter-spacing:-1px}
+.feat{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px;max-width:1000px}
+.feat span{border:2px solid var(--line);border-radius:40px;padding:10px 22px;font-size:21px;color:#DDE6E2}
+.feat span b{color:var(--volt)}
+
+/* ---------- 6. diferencial ---------- */
+.matrix{width:100%;border-collapse:separate;border-spacing:0 12px;margin-top:40px;font-size:27px}
+.matrix th{font-family:var(--display);font-weight:600;font-size:25px;color:#4b5a55;text-align:center;padding:0 10px 6px}
+.matrix th:first-child{text-align:left}
+.matrix td{background:#fff;padding:22px 16px;text-align:center}
+.matrix td:first-child{text-align:left;border-radius:22px 0 0 22px;padding-left:34px;font-weight:600}
+.matrix td:last-child{border-radius:0 22px 22px 0}
+.matrix td.us{background:var(--ink);color:var(--volt);font-weight:700}
+.matrix th.us{color:var(--brand)}
+.yes,.no,.mid{display:inline-flex;width:46px;height:46px;border-radius:50%;align-items:center;justify-content:center;font-weight:700;font-size:26px}
+.yes{background:#DCF5C4;color:var(--brand)} .no{background:#F1EEE6;color:#A2AAA6} .mid{background:#FFF1C9;color:#9A6B00}
+td.us .yes{background:var(--volt);color:var(--ink)}
+.matrix tr{opacity:0;transform:translateX(-40px);transition:all .7s var(--ease);transition-delay:calc(var(--d) * 1ms + 300ms)}
+.slide.in .matrix tr{opacity:1;transform:none}
+
+/* ---------- 7. dinheiro por aula ---------- */
+.flow{display:flex;align-items:flex-end;gap:26px;height:400px;margin-top:70px;padding-bottom:10px;border-bottom:3px solid rgba(14,26,23,.15)}
+.col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;position:relative}
+.col .bx{width:100%;border-radius:20px 20px 6px 6px;height:0;transition:height 1.1s var(--ease);transition-delay:calc(var(--d) * 1ms + 400ms);position:relative}
+.slide.in .col .bx{height:var(--h)}
+.col .v{font-family:var(--display);font-weight:700;font-size:44px;letter-spacing:-1.5px;margin-bottom:12px;opacity:0;transform:translateY(10px);transition:opacity .5s,transform .5s;transition-delay:calc(var(--d) * 1ms + 700ms)}
+.slide.in .col .v{opacity:1;transform:none}
+.col.win .v{font-size:48px;white-space:nowrap;background:var(--ink);color:var(--volt);padding:6px 18px;border-radius:16px}
+.col .l{position:absolute;bottom:-78px;font-size:22px;text-align:center;line-height:1.25;width:220px;color:#2E3D38}
+.bx.total{background:var(--ink)} .bx.inst{background:#9FB9AE} .bx.dest{background:var(--brand)} .bx.minus{background:var(--coral);opacity:.85} .bx.win{background:var(--ink);box-shadow:0 0 0 5px #fff}
+.flow-note{display:flex;gap:24px;margin-top:104px;font-size:22px;color:#2E3D38}
+.flow-note div{background:rgba(14,26,23,.08);border-radius:20px;padding:18px 26px}
+.flow-note b{font-family:var(--display)}
+
+/* ---------- 8. custo ---------- */
+#s8 .grid{display:grid;grid-template-columns:660px 1fr;gap:80px;margin-top:44px}
+.bigmoney{background:var(--ink2);border:2px solid var(--line);border-radius:30px;padding:30px 36px}
+.bigmoney .num{font-size:96px;color:var(--volt);display:block;line-height:1}
+.bigmoney .lab{font-size:22px;color:#B9C7C2;margin-top:10px}
+.bigmoney + .bigmoney{margin-top:20px}
+.bigmoney .num.w{color:#fff;font-size:76px}
+.stairs{display:flex;align-items:stretch;gap:24px;height:560px;margin-top:10px}
+.stair{flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%}
+.stair .room{flex:1;display:flex;align-items:flex-end}
+.stair .room .bx{width:100%}
+.stair .bx{border-radius:22px;background:linear-gradient(180deg,var(--ink3),var(--ink2));border:2px solid var(--line);height:0;transition:height 1.2s var(--ease);transition-delay:calc(var(--d)*1ms + 500ms);display:flex;flex-direction:column;justify-content:flex-start;padding:22px;overflow:hidden}
+.slide.in .stair .bx{height:var(--h)}
+.stair .bx b{font-family:var(--display);font-size:46px;letter-spacing:-1.5px;color:var(--volt)}
+.stair .bx span{font-size:21px;color:#B9C7C2;margin-top:6px}
+.stair .t{font-family:var(--display);font-size:28px;font-weight:700;margin-top:18px}
+.stair .t small{display:block;font-family:var(--text);font-size:20px;font-weight:400;color:var(--muted);margin-top:4px}
+.invlist{margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:2px 30px;font-size:19px;color:#B9C7C2}
+.invlist div{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding:6px 0;white-space:nowrap}
+.invlist b{color:#fff}
+
+/* ---------- 9. graficos ---------- */
+#s9 h2{font-size:68px}
+#s9 .grid{display:grid;grid-template-columns:600px 1fr;gap:50px;margin-top:36px}
+.panel{background:#fff;border-radius:30px;border:2px solid #E3DED2;padding:26px 32px;position:relative}
+.panel h4{font-family:var(--display);font-size:28px;letter-spacing:-.6px;margin-bottom:10px}
+.panel .sub{font-size:19px;color:#6B7A75}
+svg text{font-family:var(--text)}
+.bar-r{transform-box:fill-box;transform:scaleY(0);transition:transform 1.2s var(--ease);transition-delay:calc(var(--d)*1ms + 500ms)}
+.slide.in .bar-r{transform:scaleY(1)}
+.bar-lab{opacity:0;transition:opacity .6s;transition-delay:calc(var(--d)*1ms + 1300ms)}
+.slide.in .bar-lab{opacity:1}
+.ln{fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset 2.4s var(--ease),opacity .4s,stroke-width .3s;transition-delay:calc(var(--d)*1ms + 600ms),0s,0s}
+.slide.in .ln{stroke-dashoffset:0}
+.ln.dim{opacity:.15}
+.mk{opacity:0;transform-box:fill-box;transform-origin:center;transform:scale(0);transition:all .6s var(--ease);transition-delay:2.6s}
+.slide.in .mk{opacity:1;transform:scale(1)}
+.chips{display:flex;gap:12px;margin:16px 0 4px}
+.chip{border:2px solid #E3DED2;border-radius:30px;padding:10px 20px;font-size:20px;font-weight:600;display:flex;align-items:center;gap:10px;transition:all .25s}
+.chip i{width:18px;height:6px;border-radius:3px;display:block}
+.chip.on{border-color:var(--ink);background:var(--ink);color:#fff}
+.sc-info{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:18px}
+.sc-info div{background:var(--paper);border-radius:18px;padding:14px 18px}
+.sc-info b{display:block;font-family:var(--display);font-size:32px;letter-spacing:-1px;transition:color .3s}
+.sc-info span{font-size:17px;color:#6B7A75}
+#tip{position:absolute;pointer-events:none;background:var(--ink);color:#fff;border-radius:14px;padding:12px 16px;font-size:17px;line-height:1.5;opacity:0;transition:opacity .15s;white-space:nowrap;z-index:5}
+#tip b{font-family:var(--display);color:var(--volt)}
+
+/* ---------- 10. metricas e riscos ---------- */
+#s10 .grid{display:grid;grid-template-columns:1fr 1.1fr;gap:70px;margin-top:56px}
+.ltv{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+.ltv div{background:var(--ink2);border:2px solid var(--line);border-radius:28px;padding:30px}
+.ltv .num{font-size:58px;color:var(--volt);display:block;white-space:nowrap}
+.ltv span{font-size:21px;color:#B9C7C2}
+.gauge{margin-top:34px;background:var(--ink2);border:2px solid var(--line);border-radius:28px;padding:30px}
+.gauge .tr{height:28px;border-radius:14px;background:#0A1411;position:relative;margin:24px 0 14px;overflow:visible}
+.gauge .fl{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:14px;background:linear-gradient(90deg,var(--coral),var(--volt));transition:width 1.6s var(--ease) .8s}
+.slide.in .gauge .fl{width:62%}
+.gauge .goal{position:absolute;left:100%;top:-14px;bottom:-14px;width:4px;background:#fff;margin-left:-4px}
+.gauge .goal::after{content:"meta 3x";position:absolute;top:-30px;right:0;font-size:18px;color:#fff;white-space:nowrap}
+.gauge p{font-size:22px;color:#B9C7C2;line-height:1.45}
+.risks{display:grid;gap:18px}
+.risk{display:grid;grid-template-columns:70px 1fr;gap:22px;background:var(--ink2);border:2px solid var(--line);border-radius:26px;padding:26px 28px;align-items:start}
+.risk .ic{width:70px;height:70px;border-radius:20px;background:rgba(255,84,54,.15);color:var(--coral);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:34px;font-weight:700}
+.risk h4{font-family:var(--display);font-size:30px;letter-spacing:-.6px}
+.risk p{font-size:21px;color:#B9C7C2;line-height:1.4;margin-top:6px}
+.risk p b{color:var(--volt);font-weight:600}
+
+/* ---------- 11. pedido ---------- */
+#s11 h2{font-size:84px}
+.timeline{position:relative;display:grid;grid-template-columns:repeat(5,1fr);gap:20px;margin-top:80px}
+.timeline::before{content:"";position:absolute;left:0;right:0;top:34px;height:10px;background:repeating-linear-gradient(90deg,var(--ink) 0 40px,transparent 40px 66px);opacity:.25}
+.timeline .line{position:absolute;left:0;top:34px;height:10px;width:0;background:repeating-linear-gradient(90deg,var(--ink) 0 40px,transparent 40px 66px);transition:width 2.4s var(--ease) .5s}
+.slide.in .timeline .line{width:100%}
+.tl{position:relative;padding-top:80px}
+.tl::before{content:"";position:absolute;top:18px;left:0;width:42px;height:42px;border-radius:50%;background:var(--ink);box-shadow:0 0 0 8px var(--volt)}
+.tl b{font-family:var(--display);font-size:32px;letter-spacing:-1px;display:block}
+.tl span{font-size:22px;line-height:1.4;display:block;margin-top:8px;color:#1E2E29}
+.ask{display:flex;gap:30px;margin-top:70px;align-items:stretch}
+.ask .box{background:var(--ink);color:#fff;border-radius:34px;padding:36px 44px;flex:1}
+.ask .box .num{font-size:92px;color:var(--volt);display:block;line-height:1}
+.ask .box span{font-size:24px;color:#B9C7C2;display:block;margin-top:12px;line-height:1.4}
+.ask .qr2{background:#fff;border-radius:34px;padding:26px;display:flex;align-items:center;gap:26px}
+#qr2{width:190px;height:190px}
+#qr2 img,#qr2 canvas{width:190px!important;height:190px!important}
+.ask .qr2 p{font-size:19px;color:var(--ink);max-width:290px;line-height:1.35}
+.ask .qr2 p b{font-family:var(--display);font-size:28px;display:block}
+
+/* ---------- notas e ajuda ---------- */
+#notes{position:fixed;left:0;right:0;bottom:0;max-height:36vh;overflow:auto;background:rgba(10,20,17,.96);color:#E8EFEC;font-size:17px;line-height:1.55;padding:18px 26px 22px;z-index:100;transform:translateY(105%);transition:transform .35s var(--ease);border-top:3px solid var(--volt)}
+#notes.on{transform:none}
+#notes b{color:var(--volt);font-family:var(--display)}
+#help{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(5,10,9,.82);z-index:120}
+#help.on{display:flex}
+#help div{background:var(--ink2);border:2px solid var(--volt);border-radius:22px;padding:30px 36px;font-size:17px;line-height:2;color:#DDE6E2}
+#help kbd{display:inline-block;min-width:34px;text-align:center;background:#000;border-radius:8px;padding:0 8px;margin-right:10px;color:var(--volt);font-family:var(--display)}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition-duration:.01s!important}}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- 1. CAPA -->
+  <section class="slide" id="s1" data-mode="ink" data-note="<b>0:00 a 0:20 · Abertura.</b> Apresentem-se rápido: 'Somos a Destrava. A gente ajuda quem tirou a carta e travou a voltar a dirigir, com segurança.' Não leia os nomes.">
+    <div class="road3d"></div>
+    <div class="biglogo">
+      <div class="mark"><i></i><i></i><i></i></div>
+      <div class="word"><span style="--i:0">d</span><span style="--i:1">e</span><span style="--i:2">s</span><span style="--i:3">t</span><span style="--i:4">r</span><span style="--i:5">a</span><span style="--i:6">v</span><span style="--i:7">a</span></div>
+    </div>
+    <p class="tag" data-a="up" style="--d:900">Destrave o volante. <em>Com segurança.</em></p>
+    <div class="team" data-a="up" style="--d:1400">
+      <span><b>Giovana Ruiz de Souza</b></span><span><b>João Victor Targino Yokoyama</b></span><span><b>Augusto Toledo Caires de Oliveira</b></span><span><b>Yasmin Inoue Martins Ponciano</b></span><span><b>Italo Carvalhaes Camargo Venerando</b></span><span><b>Davi Paiva Souza</b></span><span><b>Luiz Otávio Xavier dos Santos</b></span>
+      <span style="width:100%">Empreendedorismo · Faculdade de Tecnologia da Unicamp · Limeira, novembro de 2026</span>
+    </div>
+  </section>
+
+  <!-- 2. PROBLEMA -->
+  <section class="slide" id="s2" data-mode="ink" data-note="<b>0:20 a 0:50 · Problema.</b> 'Quantos aqui têm CNH e quase não dirigem?' Esperem as mãos. Três dores: não acha instrutor para poucas aulas, medo de entrar no carro com desconhecido, e a autoescola só vende pacote para a prova.">
+    <div class="eyebrow" data-a="up">O problema</div>
+    <h2 data-a="up" style="--d:100">Tirou a carta.<br><em>Travou.</em></h2>
+    <div class="cards" style="grid-template-columns:repeat(3,1fr)">
+      <div class="card" data-a="up" style="--d:400"><div class="k">01</div><h3>Ninguém vende poucas aulas</h3><p>Autoescola vende pacote pensado para a prova, não para a dificuldade de quem já tem CNH.</p></div>
+      <div class="card" data-a="up" style="--d:550"><div class="k">02</div><h3>Carro com um desconhecido</h3><p>Quem já está nervoso ao volante não quer entrar no carro de alguém sem nenhuma checagem.</p></div>
+      <div class="card" data-a="up" style="--d:700"><div class="k">03</div><h3>A oferta está espalhada</h3><p>Instagram, Google e indicação. Não dá para comparar instrutor, preço e avaliação.</p></div>
+    </div>
+    <div class="quote" data-a="left" style="--d:1000">“Tenho CNH desde os 18 e nunca dirigi sozinha.”<small>estudante de engenharia, 22 anos, na nossa pesquisa</small></div>
+  </section>
+
+  <!-- 3. PESQUISA -->
+  <section class="slide paper" id="s3" data-mode="paper" data-note="<b>0:50 a 1:25 · Validação.</b> '77 pessoas responderam nosso formulário e fizemos 5 entrevistas.' Destaque: quem dirige todo dia não quer (0 de 25), quem tem carta e dirige pouco quer (67%). Surpresa: o principal motivo é não ter carro, não o medo. E 86% querem GPS ao vivo.">
+    <div class="eyebrow" data-a="up">Fomos perguntar · 77 respostas + 5 entrevistas</div>
+    <h2 data-a="up" style="--d:100">Quem tem carta e dirige pouco <em>quer aula.</em></h2>
+    <div class="stats">
+      <div class="stat hot" data-a="up" style="--d:350"><b class="num" data-count="67" data-suf="%">0%</b><span>de quem tem CNH e dirige pouco contrataria</span></div>
+      <div class="stat" data-a="up" style="--d:500"><b class="num" data-count="67" data-suf="%">0%</b><span>desse grupo não dirige porque não tem carro</span></div>
+      <div class="stat" data-a="up" style="--d:650"><b class="num" data-count="86" data-suf="%">0%</b><span>querem GPS ao vivo na aula</span></div>
+      <div class="stat" data-a="up" style="--d:800"><b class="num" data-count="76" data-suf="%">0%</b><span>dos interessados pagariam R$ 5 de taxa com seguro</span></div>
+    </div>
+    <div class="hbars">
+      <div class="small" data-a="up" style="--d:900;margin-bottom:4px">Contrataria uma aula avulsa (nota 4 ou 5 de 1 a 5)</div>
+      <div class="hbar top" data-a="up" style="--d:950"><span>Tem CNH e dirige raramente ou nunca</span><div class="track"><div class="bar" style="--w:67%;--d:950"></div></div><b>67%</b></div>
+      <div class="hbar" data-a="up" style="--d:1050"><span>Está tirando a primeira CNH</span><div class="track"><div class="bar" style="--w:67%;--d:1050"></div></div><b>67%</b></div>
+      <div class="hbar" data-a="up" style="--d:1150"><span>Dirige todo dia ou toda semana</span><div class="track"><div class="bar" style="--w:0.6%;--d:1150"></div></div><b>0%</b></div>
+    </div>
+  </section>
+
+  <!-- 4. SOLUCAO -->
+  <section class="slide" id="s4" data-mode="ink" data-note="<b>1:25 a 1:55 · Solução.</b> Três passos: diga o que te trava, escolha quem vai te ensinar, faça a aula acompanhada. Fale do GPS, do contato de confiança e do botão de emergência.">
+    <div class="eyebrow" data-a="up">A solução</div>
+    <h2 data-a="up" style="--d:100">Escolha quem vai te ensinar e <em>volte a dirigir.</em></h2>
+    <div class="sol">
+      <div class="step" data-a="up" style="--d:400"><div class="phone float"><img src="../docs/prints/01-inicio-busca.png" alt="Tela de busca por dificuldade"></div><div class="n">01</div><h3>Diga o que te trava</h3><p>Estrada, baliza, ladeira, noite ou medo. A busca começa pela dificuldade.</p></div>
+      <div class="step" data-a="up" style="--d:600"><div class="phone float"><img src="../docs/prints/03-perfil-instrutora.png" alt="Perfil de instrutora verificada"></div><div class="n">02</div><h3>Escolha o instrutor</h3><p>Perfil verificado, avaliações, carro e preço antes de agendar. Filtro por instrutora mulher.</p></div>
+      <div class="step" data-a="up" style="--d:800"><div class="phone float"><img src="../docs/prints/08-aula-ao-vivo.png" alt="Aula ao vivo com GPS"></div><div class="n">03</div><h3>Aula acompanhada</h3><p>GPS ao vivo, contato de confiança, botão de emergência e gravação opcional.</p></div>
+    </div>
+  </section>
+
+  <!-- 5. DEMO -->
+  <section class="slide" id="s5" data-mode="ink" data-note="<b>1:55 a 2:30 · Demonstração.</b> O site está rodando de verdade dentro do celular da tela: dá para clicar. Mostre a busca e o perfil. Peça para a banca apontar a câmera para o QR. Clique fora do celular (ou aperte a seta) para seguir.">
+    <div>
+      <div class="eyebrow" data-a="up">Funcionando agora</div>
+      <h2 data-a="up" style="--d:100">Não é protótipo.<br><em>É um site no ar.</em></h2>
+      <p class="lede" data-a="up" style="--d:250;font-size:29px;margin-top:22px">Roda no navegador do celular e instala na tela inicial como um app (PWA). Sem taxa de loja e com correção publicada no mesmo dia.</p>
+      <div class="feat" data-a="up" style="--d:450">
+        <span><b>✓</b> Busca por dificuldade</span><span><b>✓</b> Agendamento e CEP</span><span><b>✓</b> GPS ao vivo</span><span><b>✓</b> Emergência no WhatsApp</span><span><b>✓</b> Gravação de áudio</span><span><b>✓</b> Cadastro e aprovação de instrutor</span>
+      </div>
+      <div class="qrbox" data-a="up" style="--d:650"><div id="qr"></div><div><div class="small">Abra no seu celular</div><div class="url">ruizgios.github.io/Destrava</div></div></div>
+    </div>
+    <div class="device" data-a="zoom" style="--d:300"><iframe id="demo" title="Site da Destrava" data-src="../index.html" allow="geolocation; microphone"></iframe></div>
+  </section>
+
+  <!-- 6. DIFERENCIAL -->
+  <section class="slide paper" id="s6" data-mode="paper" data-note="<b>2:30 a 2:55 · Diferencial.</b> Já existe app de instrutor e já existe autoescola. Ninguém junta aula avulsa com a camada de segurança: antecedentes, GPS ao vivo e emergência.">
+    <div class="eyebrow" data-a="up">Por que a Destrava</div>
+    <h2 data-a="up" style="--d:100">Ninguém junta aula avulsa com <em>segurança.</em></h2>
+    <table class="matrix">
+      <tr style="--d:300"><th></th><th>Autoescola</th><th>Instrutor por indicação</th><th>Apps de instrutor</th><th class="us">Destrava</th></tr>
+      <tr style="--d:420"><td>Aula avulsa, sem pacote</td><td><span class="no">–</span></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td class="us"><span class="yes">✓</span></td></tr>
+      <tr style="--d:540"><td>Escolhe o instrutor pelo perfil e avaliações</td><td><span class="no">–</span></td><td><span class="no">–</span></td><td><span class="yes">✓</span></td><td class="us"><span class="yes">✓</span></td></tr>
+      <tr style="--d:660"><td>Antecedentes e credencial conferidos</td><td><span class="mid">~</span></td><td><span class="no">–</span></td><td><span class="mid">~</span></td><td class="us"><span class="yes">✓</span></td></tr>
+      <tr style="--d:780"><td>GPS ao vivo e contato de confiança</td><td><span class="no">–</span></td><td><span class="no">–</span></td><td><span class="no">–</span></td><td class="us"><span class="yes">✓</span></td></tr>
+      <tr style="--d:900"><td>Botão de emergência e denúncia</td><td><span class="no">–</span></td><td><span class="no">–</span></td><td><span class="no">–</span></td><td class="us"><span class="yes">✓</span></td></tr>
+    </table>
+    <p class="small" data-a="up" style="--d:1100;margin-top:16px">~ = existe, mas não é destacado para o aluno. Mapeamento de UDrive, Habilitae, Instrutor Legal, Conecta Instrutor e app CNH do Brasil.</p>
+  </section>
+
+  <!-- 7. DINHEIRO POR AULA -->
+  <section class="slide volt" id="s7" data-mode="volt" data-note="<b>2:55 a 3:25 · Modelo de negócio.</b> O aluno paga R$ 79 em média. R$ 64,75 vão direto para o instrutor (pagamento dividido). Ficam R$ 14,25 com a gente: comissão de 20% na 1ª aula e 10% nas seguintes, mais R$ 5 de taxa de segurança. Depois de imposto, pagamento e seguro, sobram R$ 7,48 por aula. O preço caiu de R$ 90 para R$ 80 por causa da pesquisa.">
+    <div class="eyebrow" data-a="up">Como ganhamos dinheiro</div>
+    <h2 data-a="up" style="--d:100">Cada aula deixa <em>R$ 7,48.</em></h2>
+    <div class="flow">
+      <div class="col"><div class="v" style="--d:300">R$ 79</div><div class="bx total" style="--h:100%;--d:300"></div><div class="l">aluno paga<br>(aula + taxa)</div></div>
+      <div class="col"><div class="v" style="--d:500">R$ 64,75</div><div class="bx inst" style="--h:82%;--d:500"></div><div class="l">vai direto para<br>o instrutor</div></div>
+      <div class="col"><div class="v" style="--d:700">R$ 14,25</div><div class="bx dest" style="--h:18%;--d:700"></div><div class="l">fica com a<br>Destrava</div></div>
+      <div class="col"><div class="v" style="--d:900">−R$ 4,30</div><div class="bx minus" style="--h:5.4%;--d:900"></div><div class="l">seguro e<br>armazenamento</div></div>
+      <div class="col"><div class="v" style="--d:1050">−R$ 1,61</div><div class="bx minus" style="--h:2.1%;--d:1050"></div><div class="l">meio de<br>pagamento</div></div>
+      <div class="col"><div class="v" style="--d:1200">−R$ 0,86</div><div class="bx minus" style="--h:1.1%;--d:1200"></div><div class="l">imposto<br>(Simples, 6%)</div></div>
+      <div class="col win"><div class="v" style="--d:1300">R$ 7,48</div><div class="bx win" style="--h:9.5%;--d:1300"></div><div class="l"><b>sobra por aula</b></div></div>
+    </div>
+    <div class="flow-note" data-a="up" style="--d:1700">
+      <div>Aula: <b>R$ 80</b> no carro do instrutor · <b>R$ 65</b> no carro do aluno</div>
+      <div>Comissão <b>20%</b> na 1ª aula · <b>10%</b> nas seguintes</div>
+      <div>Taxa de segurança <b>R$ 5</b></div>
+    </div>
+  </section>
+
+  <!-- 8. QUANTO CUSTA -->
+  <section class="slide" id="s8" data-mode="ink" data-note="<b>3:25 a 3:50 · Quanto custa.</b> O MVP custou zero. Para começar a cobrar: R$ 4.980, quase tudo jurídico e abertura da empresa. O custo fixo sobe em degraus, só quando o volume pede. Precisamos de R$ 23,4 mil para chegar até o ponto em que o negócio se paga.">
+    <div class="eyebrow" data-a="up">Quanto custa</div>
+    <h2 data-a="up" style="--d:100">Barato para começar. <em>Cresce em degraus.</em></h2>
+    <div class="grid">
+      <div>
+        <div class="bigmoney" data-a="left" style="--d:300"><b class="num" data-count="4980" data-pre="R$ ">R$ 0</b><div class="lab">investimento para começar a cobrar · o MVP no ar custou R$ 0</div>
+          <div class="invlist"><div>Jurídico e LGPD<b>R$ 3.000</b></div><div>Empresa e contador<b>R$ 1.000</b></div><div>Lançamento<b>R$ 500</b></div><div>Marca no INPI<b>R$ 440</b></div><div>Domínio<b>R$ 40</b></div><div>Taxa de loja<b>R$ 0</b></div></div>
+        </div>
+        <div class="bigmoney" data-a="left" style="--d:500"><b class="num w" data-count="23359" data-pre="R$ ">R$ 0</b><div class="lab">capital total até o negócio se pagar (pior saldo, em abr/2028)</div></div>
+      </div>
+      <div>
+        <div class="small" data-a="up" style="--d:400">Custo fixo por mês</div>
+        <div class="stairs">
+          <div class="stair"><div class="room"><div class="bx" style="--h:27%;--d:500"><b>R$ 1.500</b><span>equipe faz o suporte</span></div></div><div class="t">Piloto<small>jan a mar/2027</small></div></div>
+          <div class="stair"><div class="room"><div class="bx" style="--h:47%;--d:750"><b>R$ 2.600</b><span>mais marketing</span></div></div><div class="t">Tração<small>até 400 aulas/mês</small></div></div>
+          <div class="stair"><div class="room"><div class="bx" style="--h:100%;--d:1000"><b>R$ 5.550</b><span>suporte contratado e R$ 3.000 de marketing</span></div></div><div class="t">Escala<small>acima de 400 aulas/mês</small></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. QUANDO DA LUCRO -->
+  <section class="slide paper" id="s9" data-mode="paper" data-note="<b>3:50 a 4:25 · Quando dá lucro.</b> Com 742 aulas por mês (28 instrutores) a conta fecha. No cenário base, lucro todo mês a partir de maio de 2028 e o dinheiro investido volta em janeiro de 2029. Clique nos cenários para mostrar pessimista e otimista. Passe o mouse no gráfico para ver o mês.">
+    <div class="eyebrow" data-a="up">Quando dá lucro</div>
+    <h2 data-a="up" style="--d:100" id="s9h">Lucro todo mês a partir de <em>mai/2028</em>.</h2>
+    <div class="grid">
+      <div class="panel" data-a="left" style="--d:300">
+        <h4>Resultado por ano · cenário base</h4><div class="sub">lucro ou prejuízo de cada ano, em R$</div>
+        <svg id="bars" viewBox="0 0 560 560" width="100%" style="height:560px"></svg>
+      </div>
+      <div class="panel" data-a="right" style="--d:400">
+        <h4>Caixa acumulado em 36 meses · três cenários</h4>
+        <div class="chips" id="chips"></div>
+        <div style="position:relative"><svg id="lines" viewBox="0 0 980 380" width="100%"></svg><div id="tip"></div></div>
+        <div class="sc-info" id="scinfo"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10. METRICAS E RISCOS -->
+  <section class="slide" id="s10" data-mode="ink" data-note="<b>4:25 a 4:45 · Métricas e riscos.</b> Sejam honestos: o LTV/CAC é 1,9, abaixo do ideal de 3. A alavanca é recompra: com 6 aulas por aluno vai para 2,6. Riscos que já medimos: preço (já ajustado), seguro (cotação é a prioridade) e enquadramento no Simples.">
+    <div class="eyebrow" data-a="up">Números que vamos medir no piloto</div>
+    <h2 data-a="up" style="--d:100">Sabemos onde pode <em>dar errado.</em></h2>
+    <div class="grid">
+      <div>
+        <div class="ltv">
+          <div data-a="up" style="--d:300"><b class="num" data-count="16" data-pre="R$ ">R$ 0</b><span>CAC máximo por aluno na escala</span></div>
+          <div data-a="up" style="--d:450"><b class="num" data-count="29.93" data-pre="R$ " data-dec="2">R$ 0</b><span>LTV: margem de cada aluno (4 aulas)</span></div>
+          <div data-a="up" style="--d:600"><b class="num" data-count="1.9" data-suf="x" data-dec="1">0x</b><span>LTV ÷ CAC</span></div>
+        </div>
+        <div class="gauge" data-a="up" style="--d:800">
+          <div class="small">LTV ÷ CAC hoje: 1,9x</div>
+          <div class="tr"><div class="fl"></div><div class="goal"></div></div>
+          <p>A alavanca é a <b style="color:var(--volt)">recompra</b>: com 6 aulas por aluno, a razão vai para 2,6x. A meta do piloto é 40% marcando a segunda aula.</p>
+        </div>
+      </div>
+      <div class="risks">
+        <div class="risk" data-a="right" style="--d:400"><div class="ic">R$</div><div><h4>Preço</h4><p>Nenhum interessado paga acima de R$ 80. <b>Já baixamos o preço</b> e a conta continua fechando, com equilíbrio em 742 aulas.</p></div></div>
+        <div class="risk" data-a="right" style="--d:600"><div class="ic">!</div><div><h4>Seguro da aula</h4><p>Único custo sem tabela pública. A R$ 6 por aula, o equilíbrio vai para 960 aulas. <b>Cotação antes do piloto.</b></p></div></div>
+        <div class="risk" data-a="right" style="--d:800"><div class="ic">%</div><div><h4>Imposto</h4><p>Sem pró-labore, a empresa pode cair no Anexo V do Simples (equilíbrio em 906 aulas). <b>Contador já orçado.</b> Reforma tributária não muda os 6%.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11. PROXIMOS PASSOS -->
+  <section class="slide volt" id="s11" data-mode="volt" data-note="<b>4:45 a 5:00 · Fechamento.</b> Próximo passo: piloto em Limeira em janeiro, com 10 instrutores. Precisamos de R$ 23,4 mil para chegar ao lucro. Feche com a frase: 'Escolha quem vai te ensinar e volte a dirigir com segurança.' Obrigado.">
+    <div class="eyebrow" data-a="up">Próximos passos</div>
+    <h2 data-a="up" style="--d:100">Escolha quem vai te ensinar e <em>volte a dirigir com segurança.</em></h2>
+    <div class="timeline">
+      <div class="line"></div>
+      <div class="tl" data-a="up" style="--d:500"><b>dez/2026</b><span>Empresa, termos de uso e LGPD, cotação do seguro</span></div>
+      <div class="tl" data-a="up" style="--d:800"><b>jan/2027</b><span>Piloto em Limeira com 10 instrutores verificados</span></div>
+      <div class="tl" data-a="up" style="--d:1100"><b>dez/2027</b><span>Passa de 400 aulas por mês e contrata suporte</span></div>
+      <div class="tl" data-a="up" style="--d:1400"><b>mai/2028</b><span>Lucro todo mês, com cerca de 740 aulas</span></div>
+      <div class="tl" data-a="up" style="--d:1700"><b>jan/2029</b><span>Todo o dinheiro investido de volta</span></div>
+    </div>
+    <div class="ask">
+      <div class="box" data-a="up" style="--d:1900"><b class="num" data-count="23359" data-pre="R$ ">R$ 0</b><span>é o que precisamos para chegar ao ponto em que a Destrava se paga.</span></div>
+      <div class="qr2" data-a="up" style="--d:2100"><div id="qr2"></div><p><b>Teste agora</b>ruizgios.github.io/Destrava</p></div>
+    </div>
+  </section>
+
+  <div id="wipe"><div class="band b2"></div><div class="band"></div></div>
+  <div class="chrome" id="brand"><div class="mark"><i></i><i></i><i></i></div><div class="word">destrava</div></div>
+  <div class="chrome" id="count">01 / 11</div>
+  <div class="chrome" id="hint">→ avançar · N notas · T cronômetro · F tela cheia · ? ajuda</div>
+  <div class="chrome" id="timer">5:00</div>
+  <div class="chrome" id="road"><div class="fill"></div></div>
+</div>
+
+<div id="notes"></div>
+<div id="help"><div>
+  <div><kbd>→</kbd><kbd>espaço</kbd> próximo slide · <kbd>←</kbd> anterior</div>
+  <div><kbd>N</kbd> notas do apresentador · <kbd>T</kbd> cronômetro de 5 minutos</div>
+  <div><kbd>F</kbd> tela cheia · <kbd>1</kbd>…<kbd>9</kbd> ir para o slide · <kbd>Home</kbd> início</div>
+  <div>No celular ou tablet: deslize para os lados</div>
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+/* ===== dados da planilha financeira (cenários, R$) ===== */
+const MESES=['dez/26','jan/27','fev/27','mar/27','abr/27','mai/27','jun/27','jul/27','ago/27','set/27','out/27','nov/27','dez/27','jan/28','fev/28','mar/28','abr/28','mai/28','jun/28','jul/28','ago/28','set/28','out/28','nov/28','dez/28','jan/29','fev/29','mar/29','abr/29','mai/29','jun/29','jul/29','ago/29','set/29','out/29','nov/29','dez/29'];
+const CEN={
+  Pessimista:{cor:'#E0552F',acc:[-4980,-6255,-7494,-8694,-10950,-13153,-15297,-17373,-19367,-21271,-23070,-24750,-26295,-27757,-29130,-30405,-31576,-32634,-33573,-34377,-35039,-35543,-35884,-36044,-36010,-35766,-38248,-40483,-42456,-44144,-45526,-46571,-47257,-47553,-47431,-46852,-45779],
+    info:[['out/2029','lucro todo mês'],['não volta','em 36 meses'],['R$ 47,6 mil','capital necessário'],['−R$ 45,8 mil','caixa em 36 meses']]},
+  Base:{cor:'#0B5F4A',acc:[-4980,-6181,-7306,-8335,-10344,-12203,-13875,-15315,-16463,-17245,-17570,-17326,-19322,-20958,-22205,-23018,-23359,-23177,-22419,-21032,-18948,-16102,-12418,-7813,-2190,4548,12513,21832,32641,45089,59340,75574,93986,114792,138233,164570,194095],
+    info:[['mai/2028','lucro todo mês'],['jan/2029','investimento volta'],['R$ 23,4 mil','capital necessário'],['R$ 194 mil','caixa em 36 meses']]},
+  Otimista:{cor:'#7FA300',acc:[-4980,-6031,-6947,-7691,-9311,-10639,-11585,-12037,-11846,-13767,-14595,-14008,-11581,-8196,-3740,1912,8912,17416,27603,39677,53868,70431,89651,111842,137363,166611,200035,238135,281475,330681,386457,449590,520962,601560,692494,795004,910483],
+    info:[['nov/2027','lucro todo mês'],['mar/2028','investimento volta'],['R$ 14,6 mil','capital necessário'],['R$ 910 mil','caixa em 36 meses']]}
+};
+const ANOS=[['2027',-14342],['2028',17132],['2029',196284]];
+
+/* ===== palco que escala ===== */
+const stage=document.getElementById('stage');
+function fit(){const s=Math.min(innerWidth/1920,innerHeight/1080);stage.style.transform=`translate(-50%,-50%) scale(${s})`}
+addEventListener('resize',fit);fit();
+
+/* ===== navegacao ===== */
+const slides=[...document.querySelectorAll('.slide')];
+let cur=0,busy=false;
+const wipe=document.getElementById('wipe');
+function fmt(v,dec,pre,suf){return (pre||'')+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:dec,maximumFractionDigits:dec})+(suf||'')}
+function countUp(el){const end=parseFloat(el.dataset.count),dec=+(el.dataset.dec||0),pre=el.dataset.pre,suf=el.dataset.suf;const t0=performance.now()+400,dur=1400;
+  (function step(t){const p=Math.min(1,Math.max(0,(t-t0)/dur));const e=1-Math.pow(1-p,3);el.textContent=fmt(end*e,dec,pre,suf);if(p<1)requestAnimationFrame(step)})(performance.now())}
+function enter(i){const s=slides[i];s.classList.add('on');requestAnimationFrame(()=>requestAnimationFrame(()=>s.classList.add('in')));
+  s.querySelectorAll('[data-count]').forEach(countUp);
+  document.body.className=(s.dataset.mode||'ink')+'-mode';
+  document.getElementById('count').textContent=String(i+1).padStart(2,'0')+' / '+slides.length;
+  document.querySelector('#road .fill').style.width=((i+1)/slides.length*100)+'%';
+  document.getElementById('brand').style.opacity=i===0?0:1;
+  document.getElementById('notes').innerHTML=s.dataset.note||'';
+  if(s.id==='s5'){const f=document.getElementById('demo');if(!f.src)f.src=f.dataset.src}
+  if(s.id==='s9')pick(curScen);
+  history.replaceState(null,'','#'+(i+1));}
+function leave(i){const s=slides[i];s.classList.remove('in','on')}
+function go(n,dir){if(busy||n<0||n>=slides.length||n===cur)return;busy=true;dir=dir||(n>cur?1:-1);
+  wipe.className='';void wipe.offsetWidth;wipe.className=dir>0?'go':'back';
+  setTimeout(()=>{leave(cur);cur=n;enter(cur)},430);
+  setTimeout(()=>{busy=false;wipe.className=''},960);
+  startTimer();
+  document.getElementById('hint').style.opacity=0;}
+function next(){go(cur+1,1)} function prev(){go(cur-1,-1)}
+addEventListener('keydown',e=>{
+  if(['ArrowRight','PageDown',' ','Enter'].includes(e.key)){e.preventDefault();next()}
+  else if(['ArrowLeft','PageUp','Backspace'].includes(e.key)){e.preventDefault();prev()}
+  else if(e.key==='Home')go(0,-1); else if(e.key==='End')go(slides.length-1,1);
+  else if(/^[1-9]$/.test(e.key))go(+e.key-1);
+  else if(e.key==='n'||e.key==='N')document.getElementById('notes').classList.toggle('on');
+  else if(e.key==='t'||e.key==='T')toggleTimer();
+  else if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{})}
+  else if(e.key==='?')document.getElementById('help').classList.toggle('on');
+  else if(e.key==='Escape')document.getElementById('help').classList.remove('on');
+});
+stage.addEventListener('click',e=>{if(e.target.closest('iframe,.chip,svg,a,button,.device'))return;const r=stage.getBoundingClientRect();(e.clientX-r.left)>r.width*0.3?next():prev()});
+let tx=null;addEventListener('touchstart',e=>{tx=e.touches[0].clientX},{passive:true});
+addEventListener('touchend',e=>{if(tx===null)return;const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>50)(dx<0?next:prev)();tx=null});
+document.getElementById('help').addEventListener('click',()=>document.getElementById('help').classList.remove('on'));
+/* foco volta para a apresentacao quando sai do iframe */
+addEventListener('blur',()=>setTimeout(()=>{if(document.activeElement&&document.activeElement.tagName==='IFRAME'){}},0));
+document.getElementById('demo').addEventListener('mouseleave',()=>{window.focus()});
+
+/* ===== cronometro de 5 minutos ===== */
+let tStart=null,tShow=false,tInt=null;
+function startTimer(){if(tStart)return;tStart=Date.now();tInt=setInterval(drawTimer,500)}
+function toggleTimer(){tShow=!tShow;document.getElementById('timer').classList.toggle('show',tShow);if(!tStart)startTimer();drawTimer()}
+function drawTimer(){if(!tStart)return;const left=300-Math.floor((Date.now()-tStart)/1000);const el=document.getElementById('timer');const a=Math.abs(left);el.textContent=(left<0?'-':'')+Math.floor(a/60)+':'+String(a%60).padStart(2,'0');el.classList.toggle('late',left<30)}
+
+/* ===== grafico de barras por ano ===== */
+(function(){const svg=document.getElementById('bars');const W=560,H=560,top=40,bot=480,min=-40000,max=210000;
+  const y=v=>top+(max-v)/(max-min)*(bot-top);let h='';
+  for(let v=0;v<=200000;v+=50000){h+=`<line x1="96" x2="548" y1="${y(v)}" y2="${y(v)}" stroke="#ECE8DE"/><text x="88" y="${y(v)+6}" text-anchor="end" font-size="17" fill="#8A968F">${v?('R$ '+v/1000+' mil'):'0'}</text>`}
+  h+=`<line x1="96" x2="548" y1="${y(0)}" y2="${y(0)}" stroke="#0E1A17" stroke-width="2"/>`;
+  ANOS.forEach(([ano,v],k)=>{const x=128+k*142,w=96,y0=y(0),y1=y(v);const neg=v<0;
+    h+=`<rect class="bar-r" style="--d:${500+k*250};transform-origin:${neg?'top':'bottom'}" x="${x}" y="${neg?y0:y1}" width="${w}" height="${Math.abs(y1-y0)}" rx="12" fill="${neg?'#FF5436':(k===2?'#0E1A17':'#0B5F4A')}"/>`;
+    h+=`<text class="bar-lab" style="--d:${500+k*250}" x="${x+w/2}" y="${neg?y1+30:y1-14}" text-anchor="middle" font-size="24" font-weight="700" font-family="Space Grotesk" fill="${neg?'#C23B20':'#0E1A17'}">${(v<0?'−':'')+'R$ '+Math.abs(Math.round(v/1000))+' mil'}</text>`;
+    h+=`<text x="${x+w/2}" y="${bot+48}" text-anchor="middle" font-size="22" font-weight="600" fill="#0E1A17">Ano ${k+1}</text><text x="${x+w/2}" y="${bot+74}" text-anchor="middle" font-size="17" fill="#8A968F">${ano}</text>`});
+  svg.innerHTML=h})();
+
+/* ===== grafico de linhas dos tres cenarios ===== */
+const LW=980,LH=380,L0=96,R0=30,T0=20,B0=50,YMAX=260000,YMIN=-60000;
+const lx=i=>L0+i*(LW-L0-R0)/36, ly=v=>T0+(YMAX-Math.min(v,YMAX*1.15))/(YMAX-YMIN)*(LH-T0-B0);
+let curScen='Base';
+(function(){const svg=document.getElementById('lines');let h=`<defs><clipPath id="cp"><rect x="${L0}" y="0" width="${LW-L0-R0}" height="${LH-B0}"/></clipPath></defs>`;
+  for(let v=-50000;v<=250000;v+=50000){h+=`<line x1="${L0}" x2="${LW-R0}" y1="${ly(v)}" y2="${ly(v)}" stroke="${v?'#ECE8DE':'#0E1A17'}" stroke-width="${v?1:2}"/><text x="${L0-12}" y="${ly(v)+6}" text-anchor="end" font-size="16" fill="#8A968F">${v?('R$ '+v/1000+'k'):'0'}</text>`}
+  [0,6,12,18,24,30,36].forEach(i=>{h+=`<text x="${lx(i)}" y="${LH-16}" text-anchor="middle" font-size="16" fill="#8A968F">${MESES[i]}</text>`});
+  Object.entries(CEN).forEach(([n,c],k)=>{const d=c.acc.map((v,i)=>(i?'L':'M')+lx(i).toFixed(1)+' '+ly(v).toFixed(1)).join(' ');
+    h+=`<path class="ln" data-s="${n}" pathLength="1" clip-path="url(#cp)" style="--d:${k*250}" d="${d}" stroke="${c.cor}" stroke-width="${n==='Base'?6:4}"/>`});
+  h+=`<text x="${LW-R0-4}" y="${T0+16}" text-anchor="end" font-size="15" fill="#7FA300" font-weight="600">otimista segue até R$ 910 mil ↗</text>`;
+  [[17,'equilíbrio · mai/28'],[25,'investimento volta · jan/29']].forEach(([i,t],k)=>{const v=CEN.Base.acc[i];h+=`<g class="mk"><circle cx="${lx(i)}" cy="${ly(v)}" r="9" fill="#0B5F4A" stroke="#fff" stroke-width="3"/><text x="${lx(i)+(k?14:-14)}" y="${ly(v)+(k?-16:34)}" text-anchor="${k?'start':'end'}" font-size="17" font-weight="700" fill="#0B5F4A">${t}</text></g>`});
+  h+=`<line id="cross" x1="0" x2="0" y1="${T0}" y2="${LH-B0}" stroke="#0E1A17" stroke-dasharray="4 5" opacity="0"/><rect id="hit" x="${L0}" y="0" width="${LW-L0-R0}" height="${LH-B0}" fill="transparent"/>`;
+  svg.innerHTML=h;
+  const chips=document.getElementById('chips');
+  Object.entries(CEN).forEach(([n,c])=>{const b=document.createElement('button');b.className='chip';b.innerHTML=`<i style="background:${c.cor}"></i>${n}`;b.onclick=e=>{e.stopPropagation();pick(n)};b.dataset.s=n;chips.appendChild(b)});
+  const tip=document.getElementById('tip'),cross=svg.querySelector('#cross');
+  svg.querySelector('#hit').addEventListener('mousemove',e=>{const r=svg.getBoundingClientRect();const sx=(e.clientX-r.left)/r.width*LW;const i=Math.max(0,Math.min(36,Math.round((sx-L0)/((LW-L0-R0)/36))));
+    cross.setAttribute('x1',lx(i));cross.setAttribute('x2',lx(i));cross.setAttribute('opacity',.5);
+    const f=v=>(v<0?'−':'')+'R$ '+Math.abs(Math.round(v)).toLocaleString('pt-BR');
+    tip.innerHTML=`<b>${MESES[i]}</b><br>`+Object.entries(CEN).map(([n,c])=>`<span style="color:${c.cor}">■</span> ${n}: ${f(c.acc[i])}`).join('<br>');
+    const px=lx(i)/LW*r.width;tip.style.left=(px>r.width*0.65?px-tip.offsetWidth-16:px+16)+'px';tip.style.top='10px';tip.style.opacity=1});
+  svg.querySelector('#hit').addEventListener('mouseleave',()=>{tip.style.opacity=0;cross.setAttribute('opacity',0)});
+})();
+function pick(n){curScen=n;document.querySelectorAll('#chips .chip').forEach(b=>b.classList.toggle('on',b.dataset.s===n));
+  document.querySelectorAll('#lines .ln').forEach(p=>{p.classList.toggle('dim',p.dataset.s!==n);p.style.strokeWidth=p.dataset.s===n?6:4});
+  document.getElementById('scinfo').innerHTML=CEN[n].info.map(([a,b])=>`<div><b style="color:${CEN[n].cor}">${a}</b><span>${b}</span></div>`).join('');
+  document.querySelectorAll('#lines .mk').forEach(m=>m.style.visibility=n==='Base'?'visible':'hidden');}
+
+/* ===== QR codes ===== */
+function qr(id,size){const el=document.getElementById(id);try{new QRCode(el,{text:'https://ruizgios.github.io/Destrava/',width:size,height:size,colorDark:'#0E1A17',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M})}catch(e){el.innerHTML='<div style="color:#0E1A17;font-size:18px;padding:20px">ruizgios.github.io/Destrava</div>'}}
+qr('qr',200);qr('qr2',190);
+
+/* ===== inicio ===== */
+const start=Math.max(0,Math.min(slides.length-1,(parseInt(location.hash.slice(1))||1)-1));
+cur=start;enter(cur);
+setTimeout(()=>{document.getElementById('hint').style.opacity=0},7000);
+</script>
+</body>
+</html>
