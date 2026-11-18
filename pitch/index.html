@@ -23,8 +23,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
 /* ---------- palco 16:9 que escala para qualquer tela ---------- */
 #stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;overflow:hidden;background:var(--ink)}
-.slide{position:absolute;inset:0;padding:112px 150px 100px;visibility:hidden;opacity:0;transition:opacity .5s var(--ease),transform .7s var(--ease);transform:scale(1.02)}
-.slide.on{visibility:visible;opacity:1;transform:none}
+.slide{position:absolute;inset:0;padding:112px 150px 100px;visibility:hidden;opacity:0;z-index:1}
+.slide.on{visibility:visible;opacity:1;z-index:2}
 .slide.paper{background:var(--paper);color:var(--ink)}
 .slide.volt{background:var(--volt);color:var(--ink)}
 
@@ -37,16 +37,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 [data-a="blur"]{filter:blur(14px);transform:scale(1.04)}
 .slide.in [data-a]{opacity:1;transform:none;filter:none}
 
-/* ---------- transicao: faixa da estrada que varre a tela ---------- */
-#wipe{position:absolute;inset:0;z-index:50;pointer-events:none;transform:translateX(-110%)}
-#wipe .band{position:absolute;inset:0;background:var(--volt)}
-#wipe .band::after{content:"";position:absolute;left:0;right:0;top:50%;height:14px;margin-top:-7px;background:repeating-linear-gradient(90deg,var(--ink) 0 70px,transparent 70px 130px)}
-#wipe .band.b2{background:var(--ink);transform:translateX(-12%);}
-#wipe .band.b2::after{background:repeating-linear-gradient(90deg,var(--volt) 0 70px,transparent 70px 130px)}
-#wipe.go{animation:wipe .95s var(--ease) forwards}
-#wipe.back{animation:wipeback .95s var(--ease) forwards}
-@keyframes wipe{0%{transform:translateX(-110%)}48%{transform:translateX(0)}52%{transform:translateX(0)}100%{transform:translateX(110%)}}
-@keyframes wipeback{0%{transform:translateX(110%)}48%{transform:translateX(0)}52%{transform:translateX(0)}100%{transform:translateX(-110%)}}
+/* ---------- transicao: os slides deslizam no sentido do carrinho ---------- */
+.slide.on.leaving{z-index:3;opacity:0;transition:opacity .5s var(--ease)}
+.slide.leaving > *{transform:translateX(var(--dx,-80px));transition:transform .5s var(--ease)}
 
 /* ---------- moldura fixa ---------- */
 .chrome{position:absolute;z-index:40;pointer-events:none}
@@ -62,7 +55,23 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .volt-mode .mark i{background:var(--ink)} .volt-mode #brand .word{color:var(--ink)}
 #count{right:150px;top:58px;font-family:var(--display);font-size:22px;font-weight:600;letter-spacing:1px;opacity:.6}
 .paper-mode #count,.volt-mode #count{color:var(--ink)}
-#road{left:0;right:0;bottom:0;height:12px;background:rgba(255,255,255,.06)}
+#road{left:0;right:0;bottom:0;height:16px;background:rgba(255,255,255,.06)}
+#car{position:absolute;bottom:13px;left:0;width:118px;height:56px;z-index:41;pointer-events:none;transition:left 1.05s cubic-bezier(.45,0,.2,1);--body:var(--volt);--win:#16302A;--logo:var(--ink);--tyre:#050A09}
+#car svg{width:100%;height:100%;overflow:visible;transform-origin:50% 100%}
+#car.rev svg{transform:scaleX(-1)}
+#car .whl{transform-box:fill-box;transform-origin:center}
+#car.go .whl{animation:spin .35s linear infinite}
+#car.go .bodyg{animation:bump .26s ease-in-out infinite}
+#car .speed{opacity:0;transition:opacity .2s}
+#car.go .speed{opacity:1}
+#car.go .speed line{animation:whoosh .3s linear infinite}
+#car .lamp{animation:blink 2.4s infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes bump{50%{transform:translateY(-2px)}}
+@keyframes whoosh{from{transform:translateX(0);opacity:1}to{transform:translateX(-26px);opacity:0}}
+@keyframes blink{0%,90%,100%{opacity:1}95%{opacity:.3}}
+.paper-mode #car{--body:var(--ink);--win:#CBFF4D;--logo:var(--volt)}
+.volt-mode #car{--body:var(--ink);--win:#2E4A42;--logo:var(--volt)}
 #road .fill{height:100%;width:0;background:repeating-linear-gradient(90deg,var(--volt) 0 46px,transparent 46px 74px);transition:width .9s var(--ease)}
 .paper-mode #road{background:rgba(14,26,23,.07)} .paper-mode #road .fill{background:repeating-linear-gradient(90deg,var(--brand) 0 46px,transparent 46px 74px)}
 .volt-mode #road .fill{background:repeating-linear-gradient(90deg,var(--ink) 0 46px,transparent 46px 74px)}
@@ -314,20 +323,20 @@ svg text{font-family:var(--text)}
   </section>
 
   <!-- 3. PESQUISA -->
-  <section class="slide paper" id="s3" data-mode="paper" data-note="<b>0:50 a 1:25 · Validação.</b> '77 pessoas responderam nosso formulário e fizemos 5 entrevistas.' Destaque: quem dirige todo dia não quer (0 de 25), quem tem carta e dirige pouco quer (67%). Surpresa: o principal motivo é não ter carro, não o medo. E 86% querem GPS ao vivo.">
+  <section class="slide paper" id="s3" data-mode="paper" data-note="<b>0:50 a 1:25 · Validação.</b> '77 pessoas responderam o formulário e fizemos 5 entrevistas.' Três achados: dois terços de quem tem carta e dirige pouco contratariam; todos os interessados têm de 19 a 24 anos, ou seja, o universitário que tirou a CNH e não tem carro na cidade da faculdade; e o que decide a escolha é avaliação e instrutora mulher, quase ninguém escolhe pelo preço. Por isso a busca mostra avaliação e tem filtro de instrutora.">
     <div class="eyebrow" data-a="up">Fomos perguntar · 77 respostas + 5 entrevistas</div>
     <h2 data-a="up" style="--d:100">Quem tem carta e dirige pouco <em>quer aula.</em></h2>
     <div class="stats">
-      <div class="stat hot" data-a="up" style="--d:350"><b class="num" data-count="67" data-suf="%">0%</b><span>de quem tem CNH e dirige pouco contrataria</span></div>
-      <div class="stat" data-a="up" style="--d:500"><b class="num" data-count="67" data-suf="%">0%</b><span>desse grupo não dirige porque não tem carro</span></div>
-      <div class="stat" data-a="up" style="--d:650"><b class="num" data-count="86" data-suf="%">0%</b><span>querem GPS ao vivo na aula</span></div>
-      <div class="stat" data-a="up" style="--d:800"><b class="num" data-count="76" data-suf="%">0%</b><span>dos interessados pagariam R$ 5 de taxa com seguro</span></div>
+      <div class="stat hot" data-a="up" style="--d:350"><b class="num" data-count="67" data-suf="%">0%</b><span>de quem tem CNH e dirige pouco contrataria uma aula (18 de 27)</span></div>
+      <div class="stat" data-a="up" style="--d:500"><b class="num">19–24</b><span>anos: a idade de todos os interessados. É o universitário sem carro na cidade da faculdade</span></div>
+      <div class="stat" data-a="up" style="--d:650"><b class="num" data-count="86" data-suf="%">0%</b><span>querem GPS ao vivo na aula. A gravação, só 9%</span></div>
+      <div class="stat" data-a="up" style="--d:800"><b class="num" data-count="76" data-suf="%">0%</b><span>dos interessados pagariam R$ 5 a mais de taxa com seguro</span></div>
     </div>
     <div class="hbars">
-      <div class="small" data-a="up" style="--d:900;margin-bottom:4px">Contrataria uma aula avulsa (nota 4 ou 5 de 1 a 5)</div>
-      <div class="hbar top" data-a="up" style="--d:950"><span>Tem CNH e dirige raramente ou nunca</span><div class="track"><div class="bar" style="--w:67%;--d:950"></div></div><b>67%</b></div>
-      <div class="hbar" data-a="up" style="--d:1050"><span>Está tirando a primeira CNH</span><div class="track"><div class="bar" style="--w:67%;--d:1050"></div></div><b>67%</b></div>
-      <div class="hbar" data-a="up" style="--d:1150"><span>Dirige todo dia ou toda semana</span><div class="track"><div class="bar" style="--w:0.6%;--d:1150"></div></div><b>0%</b></div>
+      <div class="small" data-a="up" style="--d:900;margin-bottom:4px">O que decide a escolha do instrutor, entre quem quer a aula</div>
+      <div class="hbar top" data-a="up" style="--d:950"><span>Avaliações de outros alunos</span><div class="track"><div class="bar" style="--w:58%;--d:950"></div></div><b>58%</b></div>
+      <div class="hbar" data-a="up" style="--d:1050"><span>Ser instrutora mulher</span><div class="track"><div class="bar" style="--w:36%;--d:1050"></div></div><b>36%</b></div>
+      <div class="hbar" data-a="up" style="--d:1150"><span>Preço</span><div class="track"><div class="bar" style="--w:3%;--d:1150"></div></div><b>3%</b></div>
     </div>
   </section>
 
@@ -346,7 +355,7 @@ svg text{font-family:var(--text)}
   <section class="slide" id="s5" data-mode="ink" data-note="<b>1:55 a 2:30 · Demonstração.</b> O site está rodando de verdade dentro do celular da tela: dá para clicar. Mostre a busca e o perfil. Peça para a banca apontar a câmera para o QR. Clique fora do celular (ou aperte a seta) para seguir.">
     <div>
       <div class="eyebrow" data-a="up">Funcionando agora</div>
-      <h2 data-a="up" style="--d:100">Não é protótipo.<br><em>É um site no ar.</em></h2>
+      <h2 data-a="up" style="--d:100">Não é protótipo!<br><em>É um site no ar!</em></h2>
       <p class="lede" data-a="up" style="--d:250;font-size:29px;margin-top:22px">Roda no navegador do celular e instala na tela inicial como um app (PWA). Sem taxa de loja e com correção publicada no mesmo dia.</p>
       <div class="feat" data-a="up" style="--d:450">
         <span><b>✓</b> Busca por dificuldade</span><span><b>✓</b> Agendamento e CEP</span><span><b>✓</b> GPS ao vivo</span><span><b>✓</b> Emergência no WhatsApp</span><span><b>✓</b> Gravação de áudio</span><span><b>✓</b> Cadastro e aprovação de instrutor</span>
@@ -392,7 +401,7 @@ svg text{font-family:var(--text)}
   </section>
 
   <!-- 8. QUANTO CUSTA -->
-  <section class="slide" id="s8" data-mode="ink" data-note="<b>3:25 a 3:50 · Quanto custa.</b> O MVP custou zero. Para começar a cobrar: R$ 4.980, quase tudo jurídico e abertura da empresa. O custo fixo sobe em degraus, só quando o volume pede. Precisamos de R$ 23,4 mil para chegar até o ponto em que o negócio se paga.">
+  <section class="slide" id="s8" data-mode="ink" data-note="<b>3:25 a 3:50 · Quanto custa.</b> O MVP custou zero. Para começar a cobrar: R$ 4.980, quase tudo jurídico e abertura da empresa. O custo fixo sobe em degraus, só quando o volume pede. O capital total até o negócio se pagar é de R$ 23,4 mil.">
     <div class="eyebrow" data-a="up">Quanto custa</div>
     <h2 data-a="up" style="--d:100">Barato para começar. <em>Cresce em degraus.</em></h2>
     <div class="grid">
@@ -457,7 +466,7 @@ svg text{font-family:var(--text)}
   </section>
 
   <!-- 11. PROXIMOS PASSOS -->
-  <section class="slide volt" id="s11" data-mode="volt" data-note="<b>4:45 a 5:00 · Fechamento.</b> Próximo passo: piloto em Limeira em janeiro, com 10 instrutores. Precisamos de R$ 23,4 mil para chegar ao lucro. Feche com a frase: 'Escolha quem vai te ensinar e volte a dirigir com segurança.' Obrigado.">
+  <section class="slide volt" id="s11" data-mode="volt" data-note="<b>4:45 a 5:00 · Fechamento.</b> Próximo passo: piloto em Limeira em janeiro, com 10 instrutores. Feche com a frase: 'Escolha quem vai te ensinar e volte a dirigir com segurança.' Obrigado.">
     <div class="eyebrow" data-a="up">Próximos passos</div>
     <h2 data-a="up" style="--d:100">Escolha quem vai te ensinar e <em>volte a dirigir com segurança.</em></h2>
     <div class="timeline">
@@ -469,17 +478,29 @@ svg text{font-family:var(--text)}
       <div class="tl" data-a="up" style="--d:1700"><b>jan/2029</b><span>Todo o dinheiro investido de volta</span></div>
     </div>
     <div class="ask">
-      <div class="box" data-a="up" style="--d:1900"><b class="num" data-count="23359" data-pre="R$ ">R$ 0</b><span>é o que precisamos para chegar ao ponto em que a Destrava se paga.</span></div>
+      <div class="box" data-a="up" style="--d:1900"><b class="num">Obrigado!</b><span>Perguntas? A Destrava está no ar: abra no celular e teste com a gente.</span></div>
       <div class="qr2" data-a="up" style="--d:2100"><div id="qr2"></div><p><b>Teste agora</b>ruizgios.github.io/Destrava</p></div>
     </div>
   </section>
 
-  <div id="wipe"><div class="band b2"></div><div class="band"></div></div>
-  <div class="chrome" id="brand"><div class="mark"><i></i><i></i><i></i></div><div class="word">destrava</div></div>
+    <div class="chrome" id="brand"><div class="mark"><i></i><i></i><i></i></div><div class="word">destrava</div></div>
   <div class="chrome" id="count">01 / 11</div>
   <div class="chrome" id="hint">→ avançar · N notas · T cronômetro · F tela cheia · ? ajuda</div>
   <div class="chrome" id="timer">5:00</div>
   <div class="chrome" id="road"><div class="fill"></div></div>
+  <div class="chrome" id="car"><svg viewBox="0 0 118 56" aria-hidden="true">
+    <g class="speed" stroke="currentColor" stroke-width="3" stroke-linecap="round" style="color:var(--body)"><line x1="-6" y1="20" x2="-26" y2="20"/><line x1="-2" y1="30" x2="-30" y2="30"/><line x1="-8" y1="40" x2="-22" y2="40"/></g>
+    <g class="bodyg">
+      <path d="M8 40 Q6 28 18 26 L34 24 Q42 8 60 8 L76 8 Q90 8 98 24 L106 26 Q114 28 113 38 L113 42 Q113 44 110 44 L10 44 Q8 44 8 40 Z" fill="var(--body)"/>
+      <path d="M42 24 Q48 13 60 13 L64 13 L64 24 Z" fill="var(--win)"/>
+      <path d="M68 13 L76 13 Q87 13 92 24 L68 24 Z" fill="var(--win)"/>
+      <rect x="44" y="31" width="8" height="3.5" rx="1.7" fill="var(--logo)"/><rect x="54" y="31" width="8" height="3.5" rx="1.7" fill="var(--logo)" opacity=".7"/><rect x="64" y="31" width="8" height="3.5" rx="1.7" fill="var(--logo)" opacity=".4"/>
+      <rect class="lamp" x="106" y="29" width="7" height="5" rx="2" fill="#FFF6C2"/>
+      <rect x="8" y="30" width="5" height="4" rx="1.5" fill="#FF5436"/>
+    </g>
+    <g class="whl"><circle cx="32" cy="44" r="10" fill="var(--tyre)"/><circle cx="32" cy="44" r="4.5" fill="var(--body)"/><rect x="31" y="35.5" width="2" height="17" fill="var(--tyre)"/></g>
+    <g class="whl"><circle cx="90" cy="44" r="10" fill="var(--tyre)"/><circle cx="90" cy="44" r="4.5" fill="var(--body)"/><rect x="89" y="35.5" width="2" height="17" fill="var(--tyre)"/></g>
+  </svg></div>
 </div>
 
 <div id="notes"></div>
@@ -512,7 +533,8 @@ addEventListener('resize',fit);fit();
 /* ===== navegacao ===== */
 const slides=[...document.querySelectorAll('.slide')];
 let cur=0,busy=false;
-const wipe=document.getElementById('wipe');
+const car=document.getElementById('car');
+function placeCar(i){const W=1920,cw=118;car.style.left=Math.round((i+1)/slides.length*W-cw*((i+1)/slides.length))+'px'}
 function fmt(v,dec,pre,suf){return (pre||'')+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:dec,maximumFractionDigits:dec})+(suf||'')}
 function countUp(el){const end=parseFloat(el.dataset.count),dec=+(el.dataset.dec||0),pre=el.dataset.pre,suf=el.dataset.suf;const t0=performance.now()+400,dur=1400;
   (function step(t){const p=Math.min(1,Math.max(0,(t-t0)/dur));const e=1-Math.pow(1-p,3);el.textContent=fmt(end*e,dec,pre,suf);if(p<1)requestAnimationFrame(step)})(performance.now())}
@@ -528,9 +550,12 @@ function enter(i){const s=slides[i];s.classList.add('on');requestAnimationFrame(
   history.replaceState(null,'','#'+(i+1));}
 function leave(i){const s=slides[i];s.classList.remove('in','on')}
 function go(n,dir){if(busy||n<0||n>=slides.length||n===cur)return;busy=true;dir=dir||(n>cur?1:-1);
-  wipe.className='';void wipe.offsetWidth;wipe.className=dir>0?'go':'back';
-  setTimeout(()=>{leave(cur);cur=n;enter(cur)},430);
-  setTimeout(()=>{busy=false;wipe.className=''},960);
+  const old=slides[cur];old.style.setProperty('--dx',dir>0?'-80px':'80px');
+  car.classList.toggle('rev',dir<0);car.classList.add('go');placeCar(n);
+  cur=n;enter(cur);
+  requestAnimationFrame(()=>old.classList.add('leaving'));
+  setTimeout(()=>{old.classList.remove('on','in','leaving')},560);
+  setTimeout(()=>{busy=false;car.classList.remove('go','rev')},1080);
   startTimer();
   document.getElementById('hint').style.opacity=0;}
 function next(){go(cur+1,1)} function prev(){go(cur-1,-1)}
@@ -604,7 +629,7 @@ qr('qr',200);qr('qr2',190);
 
 /* ===== inicio ===== */
 const start=Math.max(0,Math.min(slides.length-1,(parseInt(location.hash.slice(1))||1)-1));
-cur=start;enter(cur);
+cur=start;placeCar(cur);enter(cur);
 setTimeout(()=>{document.getElementById('hint').style.opacity=0},7000);
 </script>
 </body>
