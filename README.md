@@ -13,7 +13,8 @@ No ar em: https://ruizgios.github.io/Destrava/
 | --- | --- |
 | `Destrava_Entrega_Final.pdf` | Relatório completo: resumo, Lean Canvas atualizado, análise financeira, documentação do MVP com prints e pesquisas |
 | `Destrava_Pesquisa_Qualitativa.xlsx` | Respostas das entrevistas individuais, codificação e resumo |
-| `Destrava_Pesquisa_Quantitativa.xlsx` | 77 respostas do Google Forms (sem nomes) e resumo com fórmulas || `Destrava_Planilha_Financeira.xlsx` | Custos e receitas com fórmulas: investimento inicial, custo por aula, custos fixos, projeção de 36 meses em 3 cenários e sensibilidade |
+| `Destrava_Pesquisa_Quantitativa.xlsx` | 77 respostas do Google Forms (sem nomes) e resumo com fórmulas |
+| `Destrava_Planilha_Financeira.xlsx` | Custos e receitas com fórmulas: investimento inicial, custo por aula, custos fixos, projeção de 36 meses em 3 cenários, sensibilidade, Fator R, CAC e LTV |
 | `Destrava_Pesquisas_para_preencher.docx` | Roteiros da entrevista, do Forms, do teste no Figma e do teste do MVP, com as tabelas de resultado para preencher |
 | `prints/` | Prints de todas as telas do app |
 
