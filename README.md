@@ -18,7 +18,7 @@ No ar em: https://ruizgios.github.io/Destrava/
 | `Destrava_Pesquisas_para_preencher.docx` | Roteiros da entrevista, do Forms, do teste no Figma e do teste do MVP, com as tabelas de resultado para preencher |
 | `prints/` | Prints de todas as telas do app |
 
-**Resumo dos números (cenário base):** MVP custou R$ 0; investimento inicial de R$ 4.980; sobram R$ 8,07 por aula; empata com 689 aulas por mês (26 instrutores); capital necessário de R$ 20,7 mil; lucro todo mês a partir de abr/2028 e retorno do investimento em dez/2028.
+**Resumo dos números (cenário base):** MVP custou R$ 0; investimento inicial de R$ 4.980; preço médio de R$ 74 (R$ 80 no carro do instrutor, ajustado pela pesquisa); sobram R$ 7,48 por aula; empata com 742 aulas por mês (28 instrutores); capital necessário de R$ 23,4 mil; lucro todo mês a partir de mai/2028 e retorno do investimento em jan/2029.
 
 ---
 
